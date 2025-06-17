@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault();
 
     const API = import.meta.env.VITE_API_URL;
-
+    console.log("VITE_API_URL en producción:", import.meta.env.VITE_API_URL);
     try {
       const res = await axios.post<{ token: string }>(`${API}/api/auth/login`, {
         email,
