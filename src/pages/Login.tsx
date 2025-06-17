@@ -12,14 +12,13 @@ const Login = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const API = import.meta.env.VITE_API_URL;
+
     try {
-      const res = await axios.post<{ token: string }>(
-        "http://localhost:3001/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const res = await axios.post<{ token: string }>(`${API}/api/auth/login`, {
+        email,
+        password,
+      });
 
       localStorage.setItem("token", res.data.token);
       navigate("/");
