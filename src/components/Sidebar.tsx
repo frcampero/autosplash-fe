@@ -77,7 +77,7 @@ const Sidebar = () => {
         )}
       >
         {/* Botón de cerrar */}
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-4 bg-white border-r-2">
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
             <X />
           </Button>
