@@ -13,7 +13,7 @@ const OrderSummaryCards = ({ totalOrders, todayOrders, totalRevenue }: Props) =>
         <CalendarDays className="text-blue-600" />
         <div>
           <div className="text-xl font-semibold">{todayOrders}</div>
-          <div className="text-gray-500 text-sm">Órdenes hoy</div>
+          <div className="text-gray-500 text-sm">Tickets hoy</div>
         </div>
       </div>
 
