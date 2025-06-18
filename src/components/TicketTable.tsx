@@ -34,56 +34,58 @@ const TicketTable = ({ tickets, loading }: Props) => {
 
   return (
     <div className="bg-white rounded-md shadow-sm p-4">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="text-left py-2 px-2 font-semibold text-gray-700">
-              Ticket #
-            </th>
-            <th className="text-left py-2 px-2 font-semibold text-gray-700">
-              Cliente
-            </th>
-            <th className="text-left py-2 px-2 font-semibold text-gray-700">
-              Fecha
-            </th>
-            <th className="text-left py-2 px-2 font-semibold text-gray-700">
-              Estado
-            </th>
-            <th className="text-left py-2 px-2 font-semibold text-gray-700">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((ticket) => (
-            <tr key={ticket._id} className="border-b hover:bg-white">
-              <td className="py-2 px-2">
-                {ticket._id.slice(-6).toUpperCase()}
-              </td>
-              <td className="py-2 px-2">
-                {ticket.customerId
-                  ? `${ticket.customerId.firstName} ${ticket.customerId.lastName}`
-                  : "Cliente desconocido"}
-              </td>
-              <td className="py-2 px-2">
-                {new Date(ticket.createdAt).toLocaleDateString()}
-              </td>
-              <td className="py-2 px-2">
-                <Badge className={getStatusBadgeClass(ticket.status)}>
-                  {ticket.status}
-                </Badge>
-              </td>
-              <td className="py-2 px-2 space-x-2">
-                <Link to={`/tickets/${ticket._id}`}>
-                  <Button variant="outline" size="sm">
-                    Ver
-                  </Button>
-                </Link>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-2 px-2 font-semibold text-gray-700">
+                Ticket #
+              </th>
+              <th className="text-left py-2 px-2 font-semibold text-gray-700">
+                Cliente
+              </th>
+              <th className="text-left py-2 px-2 font-semibold text-gray-700">
+                Fecha
+              </th>
+              <th className="text-left py-2 px-2 font-semibold text-gray-700">
+                Estado
+              </th>
+              <th className="text-left py-2 px-2 font-semibold text-gray-700">
+                Acciones
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {tickets.map((ticket) => (
+              <tr key={ticket._id} className="border-b hover:bg-white">
+                <td className="py-2 px-2">
+                  {ticket._id.slice(-6).toUpperCase()}
+                </td>
+                <td className="py-2 px-2">
+                  {ticket.customerId
+                    ? `${ticket.customerId.firstName} ${ticket.customerId.lastName}`
+                    : "Cliente desconocido"}
+                </td>
+                <td className="py-2 px-2">
+                  {new Date(ticket.createdAt).toLocaleDateString()}
+                </td>
+                <td className="py-2 px-2">
+                  <Badge className={getStatusBadgeClass(ticket.status)}>
+                    {ticket.status}
+                  </Badge>
+                </td>
+                <td className="py-2 px-2 space-x-2">
+                  <Link to={`/tickets/${ticket._id}`}>
+                    <Button variant="outline" size="sm">
+                      Ver
+                    </Button>
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
