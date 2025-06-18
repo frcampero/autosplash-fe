@@ -64,7 +64,7 @@ const Sidebar = () => {
       {/* Sidebar tipo Drawer para Mobile */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/50 md:hidden transition-opacity duration-300",
+          "fixed inset-0 z-40 bg-white md:hidden transition-opacity duration-300",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={() => setOpen(false)}
