@@ -29,7 +29,7 @@ const OrderSummaryCards = ({ totalOrders, todayOrders, totalRevenue }: Props) =>
         <Package className="text-purple-600" />
         <div>
           <div className="text-xl font-semibold">{totalOrders}</div>
-          <div className="text-gray-500 text-sm">Órdenes totales</div>
+          <div className="text-gray-500 text-sm">Tickets totales</div>
         </div>
       </div>
     </div>
