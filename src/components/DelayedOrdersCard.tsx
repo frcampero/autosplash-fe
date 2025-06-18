@@ -29,7 +29,7 @@ const DelayedOrdersCard = () => {
     <div className="bg-white rounded-md shadow-sm p-4 w-full">
       <h2 className="text-lg font-semibold mb-4">Tickets atrasados</h2>
       {orders.length === 0 ? (
-        <p className="text-gray-500">No hay órdenes atrasadas.</p>
+        <p className="text-gray-500">No hay tikets atrasados.</p>
       ) : (
         <ul className="space-y-2">
           {orders.map((o, idx) => (
