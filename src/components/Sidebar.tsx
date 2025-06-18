@@ -1,5 +1,5 @@
 // src/components/Sidebar.jsx
-import { Home, FileText, LogOut, Menu } from "lucide-react";
+import { Home, FileText, LogOut, Menu, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
@@ -22,14 +22,14 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Botón Hamburguesa (solo en mobile) */}
-      <div className="md:hidden p-4">
-        <Button variant="outline" onClick={() => setOpen(!open)}>
+      {/* Botón Hamburguesa (solo en mobile, arriba izquierda) */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <Button variant="outline" size="icon" onClick={() => setOpen(true)}>
           <Menu />
         </Button>
       </div>
 
-      {/* Sidebar para desktop */}
+      {/* Sidebar permanente para desktop */}
       <aside className="hidden md:flex w-64 h-screen border-r bg-white px-4 py-6 shadow-sm flex-col justify-between">
         <div>
           <nav className="flex flex-col gap-2">
@@ -61,45 +61,62 @@ const Sidebar = () => {
         </Button>
       </aside>
 
-      {/* Sidebar móvil desplegable */}
-      {open && (
-        <div className="fixed inset-0 z-50 bg-black/40 md:hidden">
-          <aside className="w-64 h-full bg-white p-6 shadow-lg flex flex-col justify-between">
-            <div>
-              <nav className="flex flex-col gap-2">
-                {links.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                      location.pathname === link.to
-                        ? "bg-muted text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-primary"
-                    )}
-                  >
-                    {link.icon}
-                    <span>{link.label}</span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
+      {/* Sidebar tipo Drawer para Mobile */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 md:hidden transition-opacity duration-300",
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setOpen(false)}
+      />
 
-            <Button
-              onClick={() => {
-                handleLogout();
-                setOpen(false);
-              }}
-              variant="outline"
-              className="flex items-center gap-2 mt-4"
-            >
-              <LogOut size={18} />
-              Cerrar sesión
-            </Button>
-          </aside>
+      <aside
+        className={cn(
+          "fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 flex flex-col justify-between px-4 py-6 md:hidden",
+          open ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Botón de cerrar */}
+        <div className="flex justify-end mb-4">
+          <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+            <X />
+          </Button>
         </div>
-      )}
+
+        {/* Navegación */}
+        <div className="flex-1">
+          <nav className="flex flex-col gap-2">
+            {links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  location.pathname === link.to
+                    ? "bg-muted text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                )}
+              >
+                {link.icon}
+                <span>{link.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <Button
+          onClick={() => {
+            handleLogout();
+            setOpen(false);
+          }}
+          variant="outline"
+          className="flex items-center gap-2 mt-4"
+        >
+          <LogOut size={18} />
+          Cerrar sesión
+        </Button>
+      </aside>
     </>
   );
 };
