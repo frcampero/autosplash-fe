@@ -111,7 +111,7 @@ This is the database structure used by Autosplash:
 
 ---
 
-## 💼 Great for your portfolio
+## 💼 Why this project matters?
 
 This project was built as a real solution to replace Excel spreadsheets in a laundry business. It showcases fullstack development, UI/UX design, database management, security, and dynamic PDF generation.
 
