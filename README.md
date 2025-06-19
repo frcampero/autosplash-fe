@@ -1,54 +1,123 @@
-# React + TypeScript + Vite
+# 🧺 Autosplash
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Autosplash** is a platform designed to digitize and simplify laundry business operations. It allows you to register wash tickets, manage customers, track payment history, and generate PDF receipts — all from a modern and user-friendly interface.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔐 Demo Account
 
-## Expanding the ESLint configuration
+You can test the app using the following credentials:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Email:** editor.autosplash@gmail.com  
+- **Password:** admin123
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+---
+
+## ✨ Key Features
+
+- Create wash tickets with automatic PDF receipt generation.
+- Customer management: create, edit, and view customers.
+- Payment tracking with history and automatic balance calculation.
+- Price calculator based on item categories.
+- View orders by status and monitor delayed tickets.
+- Dashboard with statistics and graphs.
+- JWT authentication and user system.
+- Optional image upload and QR code for ticket tracking.
+- Internal notes per ticket.
+- Responsive design optimized for mobile devices.
+
+---
+
+## 🛠️ Tech Stack
+
+### 🖥️ Frontend
+- Vite + React + TypeScript
+- Tailwind CSS
+- React Router
+- Axios
+- Sonner (notifications)
+- date-fns (date formatting)
+- Chart.js
+
+### 🧠 Backend
+- Node.js + Express
+- MongoDB (Mongoose)
+- JWT (authentication)
+- Firebase Cloud Messaging (push notifications)
+- PDFKit (receipt generation)
+- Cloudinary (optional for images)
+- Winston (logging)
+- Express-validator (validations)
+- Morgan (request logger)
+
+---
+
+## ⚙️ Installation
+
+### Clone the repositories
+```bash
+# Frontend
+git clone https://github.com/yourusername/autosplash-fe.git
+
+# Backend
+git clone https://github.com/frcampero/autosplash-be.git
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+### Backend setup
+```bash
+cd autosplash-be
+npm install
+cp .env.example .env
+# Configure your environment variables (MongoDB, JWT, etc.)
+npm run dev
 ```
+
+### Frontend setup
+```bash
+cd autosplash-frontend
+npm install
+cp .env.example .env
+# Set VITE_API_URL to your backend URL
+npm run dev
+```
+
+---
+
+## 🔗 Backend Repository
+
+You can check the backend code here:  
+👉 [autosplash-be](https://github.com/frcampero/autosplash-be)
+
+---
+
+## 📄 Screenshots
+
+
+---
+
+## 🧠 Entity Relationship Diagram (ERD)
+
+This is the database structure used by Autosplash:
+
+![ERD](./docs/der-autosplash.png)
+
+---
+
+## 📦 Project Status
+
+🚧 In development — Currently used by a real-world laundry shop. Coming soon:
+- Dashboard filters by date range.
+- Photo upload when creating a ticket.
+
+---
+
+## 💼 Great for your portfolio
+
+This project was built as a real solution to replace Excel spreadsheets in a laundry business. It showcases fullstack development, UI/UX design, database management, security, and dynamic PDF generation.
+
+---
+
+## 🧠 Author
+
+Federico Campero  
+📫 [fcampero.dev](mailto:fcampero.dev)
