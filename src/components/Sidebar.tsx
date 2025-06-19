@@ -1,5 +1,5 @@
 // src/components/Sidebar.jsx
-import { Home, FileText, LogOut, Menu, X } from "lucide-react";
+import { Home, FileText, LogOut, Menu, X, Tag } from "lucide-react"; // 👈 agregá Tag
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
@@ -13,6 +13,7 @@ const Sidebar = () => {
   const links = [
     { to: "/", icon: <Home size={20} />, label: "Inicio" },
     { to: "/tickets", icon: <FileText size={20} />, label: "Tickets" },
+    { to: "/precios", icon: <Tag size={20} />, label: "Precios" }, // ✅ nuevo
   ];
 
   const handleLogout = () => {
@@ -22,14 +23,14 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Botón Hamburguesa (solo en mobile, arriba izquierda) */}
+      {/* Botón Hamburguesa */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Button variant="outline" size="icon" onClick={() => setOpen(true)}>
           <Menu />
         </Button>
       </div>
 
-      {/* Sidebar permanente para desktop */}
+      {/* Sidebar permanente (Desktop) */}
       <aside className="hidden md:flex w-64 h-screen border-r bg-white px-4 py-6 shadow-sm flex-col justify-between">
         <div>
           <nav className="flex flex-col gap-2">
@@ -61,7 +62,7 @@ const Sidebar = () => {
         </Button>
       </aside>
 
-      {/* Sidebar tipo Drawer para Mobile */}
+      {/* Drawer (Mobile) */}
       <div
         className={cn(
           "fixed inset-0 z-40 bg-white md:hidden transition-opacity duration-300",
@@ -69,21 +70,18 @@ const Sidebar = () => {
         )}
         onClick={() => setOpen(false)}
       />
-
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 flex flex-col justify-between px-4 py-6 md:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Botón de cerrar */}
         <div className="flex justify-end mb-4 bg-white">
           <Button variant="outline" size="icon" onClick={() => setOpen(false)} className="bg-white">
             <X />
           </Button>
         </div>
 
-        {/* Navegación */}
         <div className="flex-1">
           <nav className="flex flex-col gap-2">
             {links.map((link) => (
