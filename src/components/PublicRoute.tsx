@@ -1,4 +1,3 @@
-// src/components/PublicRoute.tsx
 import { Navigate } from 'react-router-dom'
 import type { ReactNode } from 'react'
 

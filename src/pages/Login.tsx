@@ -34,7 +34,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Columna izquierda con fondo decorativo */}
+      {/* Columna izquierda */}
       <div className="hidden md:flex w-1/2 items-center justify-center bg-gradient-to-br from-blue-400 to-indigo-600 relative">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-10 left-10 w-60 h-60 bg-white opacity-10 rounded-full animate-ping"></div>
@@ -42,14 +42,14 @@ const Login = () => {
         </div>
         <div className="relative z-10">
           <img
-            src="/imagotipo-claro.png" // ⬅️ Asegurate de que la imagen exista en public/
+            src="/imagotipo-claro.png"
             alt="Autosplash Logo"
             className="max-w-xs w-full object-contain"
           />
         </div>
       </div>
 
-      {/* Columna derecha con el formulario */}
+      {/* Columna derecha */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white">
         <div className="max-w-md w-full p-8">
           <h2 className="text-3xl font-bold mb-6 text-gray-800 text-center">

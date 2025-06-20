@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Tickets from "./pages/Tickets";
 import CreateTicket from "./pages/CreateTickets";
 import TicketDetail from "./pages/TicketDetail";
-import Prices from "./pages/Prices"; // 👈 importá el módulo de precios
+import Prices from "./pages/Prices";
 import Login from "./pages/Login";
 import PrivateRoute from "./components/PrivateRoute";
 import { Toaster } from "sonner";
@@ -39,7 +39,7 @@ function App() {
             <Route path="/precios" element={<Prices />} /> {/* ✅ nuevo */}
           </Route>
 
-          {/* 🔓 Ruta pública para tracking de pedidos */}
+          {/* Ruta pública */}
           <Route path="/orders/:id" element={<PublicOrderPage />} />
         </Routes>
       </BrowserRouter>

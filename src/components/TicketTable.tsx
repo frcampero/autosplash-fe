@@ -1,4 +1,3 @@
-// src/components/TicketTable.tsx
 import { Link } from "react-router-dom";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";

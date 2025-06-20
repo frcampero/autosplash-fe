@@ -78,7 +78,6 @@ const TicketDetail = () => {
     setIsSaving(true);
 
     try {
-      // Calculamos el total abonado real desde los pagos
       const totalAbonado = payments.reduce((acc, p) => acc + p.amount, 0);
 
       if (totalAbonado > ticket.total) {

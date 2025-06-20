@@ -1,4 +1,3 @@
-// src/components/Sidebar.jsx
 import { Home, FileText, LogOut, Menu, X, Tag } from "lucide-react"; // 👈 agregá Tag
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
@@ -30,7 +29,7 @@ const Sidebar = () => {
         </Button>
       </div>
 
-      {/* Sidebar permanente (Desktop) */}
+      {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex w-64 h-screen border-r bg-white px-4 py-6 shadow-sm flex-col justify-between">
         <div>
           <nav className="flex flex-col gap-2">
@@ -62,7 +61,7 @@ const Sidebar = () => {
         </Button>
       </aside>
 
-      {/* Drawer (Mobile) */}
+      {/* Mobile */}
       <div
         className={cn(
           "fixed inset-0 z-40 bg-white md:hidden transition-opacity duration-300",

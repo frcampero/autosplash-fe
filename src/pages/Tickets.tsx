@@ -1,4 +1,3 @@
-// src/pages/Tickets.tsx
 import { useEffect, useState } from "react";
 import TicketTable from "../components/TicketTable";
 import axios from "axios";
