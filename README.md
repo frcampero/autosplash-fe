@@ -57,7 +57,7 @@ You can test the app using the following credentials:
 ### Clone the repositories
 ```bash
 # Frontend
-git clone https://github.com/yourusername/autosplash-fe.git
+git clone https://github.com/frcampero/autosplash-fe.git
 
 # Backend
 git clone https://github.com/frcampero/autosplash-be.git
