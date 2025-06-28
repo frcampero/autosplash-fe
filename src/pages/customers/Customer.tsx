@@ -18,19 +18,19 @@ const Customers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchCustomers = async () => {
-    try {
-      const res = await axios.get(`${API}/api/customers`, getAuthHeaders());
-      console.log("📦 Producción: res.data =", res.data); // 👈
-      setCustomers(res.data.results);
-    } catch (err) {
-      console.error("❌ Error al cargar clientes:", err);
-    }
-  };
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const res = await axios.get(`${API}/api/customers`, getAuthHeaders());
+        console.log("📦 Producción: res.data =", res.data); // 👈
+        setCustomers(res.data.results || res.data || []);
+      } catch (err) {
+        console.error("❌ Error al cargar clientes:", err);
+      }
+    };
 
-  fetchCustomers();
-}, []);
+    fetchCustomers();
+  }, []);
 
   return (
     <div className="p-6">
