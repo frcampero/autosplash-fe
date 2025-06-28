@@ -1,11 +1,14 @@
+// TicketDetail.tsx
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
 import axios from "axios";
 import { toast } from "sonner";
 import { getAuthHeaders } from "../lib/auth";
 import ReceiptDownloadButton from "../components/ReceiptDownloadButton";
+import TicketCustomerSection from "../components/tickets-details/TicketCustomerSection";
+import TicketOrderSection from "../components/tickets-details/TicketOrderSection";
+import TicketPaymentSection from "../components/tickets-details/TicketPaymentSection";
 
 interface Ticket {
   _id: string;
@@ -41,7 +44,6 @@ const TicketDetail = () => {
   const [paid, setPaid] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [payments, setPayments] = useState<Payment[]>([]);
-
   const [newAmount, setNewAmount] = useState("");
   const [newMethod, setNewMethod] = useState("Efectivo");
 
@@ -88,11 +90,12 @@ const TicketDetail = () => {
 
       await axios.put(
         `${API}/api/orders/${ticket._id}`,
-        {
-          status,
-        },
+        { status },
         getAuthHeaders()
       );
+
+      // 🔄 Actualizar el estado local del ticket
+      setTicket((prev) => (prev ? { ...prev, status } : prev));
 
       toast.success("Cambios guardados correctamente");
     } catch (err: any) {
@@ -149,20 +152,33 @@ const TicketDetail = () => {
     }
   };
 
-  const getPaymentStatusClass = (status: string) => {
-    switch (status) {
-      case "Pagado":
-        return "text-green-600 font-semibold";
-      case "Parcial":
-        return "text-yellow-600 font-semibold";
-      case "Pendiente":
-        return "text-red-600 font-semibold";
-      default:
-        return "text-gray-600";
+  const handleDeletePayment = async (paymentId: string) => {
+    try {
+      await axios.delete(`${API}/api/payments/${paymentId}`, getAuthHeaders());
+      toast.success("Pago eliminado correctamente");
+
+      // Refrescar pagos
+      const paymentsRes = await axios.get(
+        `${API}/api/payments?orderId=${ticket?._id}`,
+        getAuthHeaders()
+      );
+      const pagos = paymentsRes.data.results || [];
+      setPayments(pagos);
+
+      const totalPagado = pagos.reduce(
+        (acc: number, p: { amount: number }) => acc + p.amount,
+        0
+      );
+      setPaid(totalPagado.toString());
+    } catch (err: any) {
+      console.error("❌ Error al eliminar pago:", err);
+      toast.error("No se pudo eliminar el pago");
     }
   };
 
   if (!ticket) return <div className="p-6">Cargando...</div>;
+
+  const hasChanges = status !== ticket.status;
 
   return (
     <div className="p-6">
@@ -183,211 +199,30 @@ const TicketDetail = () => {
         }}
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
-        {/* CLIENTE */}
-        <fieldset className="space-y-3 border rounded p-4">
-          <legend className="text-sm font-semibold text-gray-700 mb-2">
-            Datos del cliente
-          </legend>
-          <Input
-            readOnly
-            value={ticket.customerId.firstName}
-            placeholder="Nombre"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-          <Input
-            readOnly
-            value={ticket.customerId.lastName}
-            placeholder="Apellido"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-          <Input
-            readOnly
-            value={ticket.customerId.phone}
-            placeholder="Teléfono"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-          <Input
-            readOnly
-            value={ticket.customerId.email}
-            placeholder="Email"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-          <Input
-            readOnly
-            value={ticket.customerId.address}
-            placeholder="Dirección"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-        </fieldset>
+        <TicketCustomerSection ticket={ticket} />
 
-        {/* PEDIDO */}
-        <fieldset className="space-y-3 border rounded p-4">
-          <legend className="text-sm font-semibold text-gray-700 mb-2">
-            Detalles del pedido
-          </legend>
-          <div>
-            <label className="text-sm font-medium">Estado</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded px-3 py-2 bg-white cursor-pointer"
-            >
-              <option value="Recibido">Recibido</option>
-              <option value="En progreso">En progreso</option>
-              <option value="Completado">Completado</option>
-              <option value="Entregado">Entregado</option>
-            </select>
-          </div>
-          <Input
-            readOnly
-            value={ticket.priority}
-            placeholder="Prioridad"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-          <textarea
-            readOnly
-            value={ticket.description}
-            rows={4}
-            className="w-full border rounded px-3 py-2 text-sm bg-gray-50 pointer-events-none cursor-default"
-          />
-          <Input
-            readOnly
-            value={ticket.note}
-            placeholder="Nota interna"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-          <Input
-            readOnly
-            value={new Date(ticket.createdAt).toLocaleDateString()}
-            placeholder="Fecha"
-            className="pointer-events-none bg-gray-50 cursor-default"
-          />
-        </fieldset>
+        <TicketOrderSection
+          ticket={ticket}
+          status={status}
+          setStatus={setStatus}
+        />
 
-        {/* PAGOS */}
-        <fieldset className="space-y-3 border rounded p-4 flex flex-col justify-between">
-          <legend className="text-sm font-semibold text-gray-700 mb-2">
-            Estado de pago
-          </legend>
-          {(() => {
-            const totalAbonado = payments.reduce((acc, p) => acc + p.amount, 0);
-            const restante = Math.max(ticket.total - totalAbonado, 0).toFixed(
-              2
-            );
-            const estadoPago =
-              totalAbonado >= ticket.total
-                ? "Pagado"
-                : totalAbonado > 0
-                ? "Parcial"
-                : "Pendiente";
-            const ultimoMetodo =
-              payments.length > 0 ? payments[0].method : "Sin pagos aún";
+        <TicketPaymentSection
+          ticket={ticket}
+          payments={payments}
+          paid={paid}
+          newAmount={newAmount}
+          setNewAmount={setNewAmount}
+          newMethod={newMethod}
+          setNewMethod={setNewMethod}
+          handleAddPayment={handleAddPayment}
+          handleSave={handleSave}
+          isSaving={isSaving}
+          hasChanges={hasChanges}
+          handleDeletePayment={handleDeletePayment}
+        />
 
-            return (
-              <>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-700">Total:</p>
-                  <Input
-                    readOnly
-                    value={ticket.total.toString()}
-                    className="pointer-events-none bg-gray-50 cursor-default"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-700">Abonado:</p>
-                  <div className="border border-gray-300 rounded px-3 py-2 bg-gray-50 text-sm text-gray-700">
-                    ${Number(paid).toFixed(2)}
-                  </div>
-                </div>
-
-                <div className="text-sm text-gray-600">
-                  Restante: ${restante}
-                </div>
-                <div className="text-sm">
-                  Estado de pago:{" "}
-                  <span className={getPaymentStatusClass(estadoPago)}>
-                    {estadoPago}
-                  </span>
-                </div>
-
-                <p className="text-sm text-gray-600">
-                  Último método de pago: <strong>{ultimoMetodo}</strong>
-                </p>
-
-                {/* Historial */}
-                {payments.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium mb-2">
-                      Historial de pagos
-                    </h4>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      {payments.map((p) => (
-                        <li
-                          key={p._id}
-                          className="flex justify-between border-b pb-1"
-                        >
-                          <span>${p.amount.toFixed(2)}</span>
-                          <span>{p.method}</span>
-                          <span className="text-gray-500">
-                            {new Date(p.createdAt).toLocaleDateString()}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <p className="text-sm text-gray-500 mt-2">
-                  Días desde creación:{" "}
-                  {Math.floor(
-                    (Date.now() - new Date(ticket.createdAt).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )}{" "}
-                  días
-                </p>
-
-                {/* NUEVO PAGO */}
-                <div className="border-t pt-4 mt-4">
-                  <h4 className="text-sm font-medium mb-2">
-                    Agregar nuevo pago
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <Input
-                      type="number"
-                      placeholder="Monto"
-                      value={newAmount}
-                      onChange={(e) => setNewAmount(e.target.value)}
-                      className="bg-white"
-                    />
-                    <select
-                      value={newMethod}
-                      onChange={(e) => setNewMethod(e.target.value)}
-                      className="border rounded px-3 py-2 bg-white cursor-pointer"
-                    >
-                      <option value="Efectivo">Efectivo</option>
-                      <option value="Tarjeta de Credito">
-                        Tarjeta de Crédito
-                      </option>
-                      <option value="Tarjeta de debito">
-                        Tarjeta de Débito
-                      </option>
-                      <option value="Transferencia">Transferencia</option>
-                    </select>
-                    <Button type="button" onClick={handleAddPayment}>
-                      Agregar
-                    </Button>
-                  </div>
-                </div>
-
-                <Button type="submit" className="mt-6" disabled={isSaving}>
-                  {isSaving ? "Guardando..." : "Guardar cambios"}
-                </Button>
-              </>
-            );
-          })()}
-          <ReceiptDownloadButton orderId={ticket._id} />
-        </fieldset>
+        <ReceiptDownloadButton orderId={ticket._id} />
       </form>
     </div>
   );

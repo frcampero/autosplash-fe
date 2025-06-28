@@ -2,13 +2,14 @@ import axios from "axios";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -32,6 +33,15 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/");
+    } else {
+      setCheckingAuth(false);
+    }
+  }, []);
+  
   return (
     <div className="min-h-screen flex">
       {/* Columna izquierda */}

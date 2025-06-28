@@ -11,7 +11,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['path'], // ❗️Evita que Vite intente incluir esto en el bundle
+      external: ['path'],
     },
   },
 })

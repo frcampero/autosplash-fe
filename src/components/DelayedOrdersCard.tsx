@@ -3,25 +3,27 @@ import axios from "axios";
 import { getAuthHeaders } from "../lib/auth";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL;
 
 interface Order {
+  _id: string;
   nombre: string;
   estado: string;
   fecha: string;
 }
 
 const DelayedOrdersCard = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     axios
       .get(`${API}/api/orders/delayed`, getAuthHeaders())
       .then((res) => setOrders(res.data))
-      .catch((err) =>
-        console.error("Error al cargar órdenes atrasadas:", err)
-      );
+      .catch((err) => console.error("Error al cargar órdenes atrasadas:", err));
   }, []);
 
   return (
@@ -33,8 +35,9 @@ const DelayedOrdersCard = () => {
         <ul className="space-y-2">
           {orders.map((o, idx) => (
             <li
-              key={idx}
-              className="flex justify-between border-b py-1 text-sm text-gray-700"
+              key={o._id}
+              onClick={() => navigate(`/tickets/${o._id}`)}
+              className="flex justify-between items-center border-b py-2 px-2 text-sm text-gray-700 cursor-pointer rounded transition-colors hover:bg-gray-100"
             >
               <div>
                 <div className="font-medium">{o.nombre}</div>
@@ -42,7 +45,10 @@ const DelayedOrdersCard = () => {
                   Hace {formatDistanceToNow(new Date(o.fecha), { locale: es })}{" "}
                 </div>
               </div>
-              <span className="text-right">{o.estado}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-right">{o.estado}</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </div>
             </li>
           ))}
         </ul>

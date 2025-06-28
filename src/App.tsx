@@ -36,7 +36,7 @@ function App() {
             <Route path="/tickets" element={<Tickets />} />
             <Route path="/tickets/nuevo" element={<CreateTicket />} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
-            <Route path="/precios" element={<Prices />} /> {/* ✅ nuevo */}
+            <Route path="/precios" element={<Prices />} />
           </Route>
 
           {/* Ruta pública */}
