@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import OrderSummaryCards from "../components/OrderSummaryCards";
-import { getAuthHeaders } from "../lib/auth";
-import OrderPieChart from "../components/OrderPieChart";
-import TopCustomersCard from "../components/TopCustomersCard";
-import DelayedOrdersCard from "../components/DelayedOrdersCard";
+import OrderSummaryCards from "@/components/OrderSummaryCards";
+import { getAuthHeaders } from "@/lib/auth";
+import OrderPieChart from "@/components/OrderPieChart";
+import TopCustomersCard from "@/components/TopCustomersCard";
+import DelayedOrdersCard from "@/components/DelayedOrdersCard";
 
 const API = import.meta.env.VITE_API_URL;
 

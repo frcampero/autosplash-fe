@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { getAuthHeaders } from "../lib/auth";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
+import { getAuthHeaders } from "../../lib/auth";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const API = import.meta.env.VITE_API_URL;

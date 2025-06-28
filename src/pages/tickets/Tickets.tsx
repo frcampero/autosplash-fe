@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import TicketTable from "../components/TicketTable";
+import TicketTable from "@/components/TicketTable";
 import axios from "axios";
-import { getAuthHeaders } from "../lib/auth";
+import { getAuthHeaders } from "@/lib/auth";
 import { Link } from "react-router-dom";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 
 const API = import.meta.env.VITE_API_URL;
 

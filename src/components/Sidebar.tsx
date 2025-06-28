@@ -1,8 +1,9 @@
-import { Home, FileText, LogOut, Menu, X, Tag } from "lucide-react"; // 👈 agregá Tag
+import { Home, FileText, LogOut, Menu, X, Tag, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { Users } from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -12,7 +13,8 @@ const Sidebar = () => {
   const links = [
     { to: "/", icon: <Home size={20} />, label: "Inicio" },
     { to: "/tickets", icon: <FileText size={20} />, label: "Tickets" },
-    { to: "/precios", icon: <Tag size={20} />, label: "Precios" }, // ✅ nuevo
+    { to: "/clientes", icon: <Users size={20} />, label: "Clientes" },
+    { to: "/precios", icon: <Tag size={20} />, label: "Precios" },
   ];
 
   const handleLogout = () => {

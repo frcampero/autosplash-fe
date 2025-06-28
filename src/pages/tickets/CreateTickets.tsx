@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
-import { getAuthHeaders } from "../lib/auth";
-import { Button } from "../components/ui/button";
-import ClienteForm from "../components/tickets/ClienteForm";
-import OrderDetailsForm from "../components/tickets/OrderDetailsForm";
-import PrendasForm from "../components/tickets/PrendasForm";
-import PaymentForm from "../components/tickets/PaymentForm";
+import { getAuthHeaders } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import ClienteForm from "@/components/tickets/ClienteForm";
+import OrderDetailsForm from "@/components/tickets/OrderDetailsForm";
+import PrendasForm from "@/components/tickets/PrendasForm";
+import PaymentForm from "@/components/tickets/PaymentForm";
 
 const API = import.meta.env.VITE_API_URL;
 

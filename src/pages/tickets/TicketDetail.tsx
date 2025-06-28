@@ -1,14 +1,13 @@
 // TicketDetail.tsx
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
-import { getAuthHeaders } from "../lib/auth";
-import ReceiptDownloadButton from "../components/ReceiptDownloadButton";
-import TicketCustomerSection from "../components/tickets-details/TicketCustomerSection";
-import TicketOrderSection from "../components/tickets-details/TicketOrderSection";
-import TicketPaymentSection from "../components/tickets-details/TicketPaymentSection";
+import { getAuthHeaders } from "@/lib/auth";
+import TicketCustomerSection from "@/components/tickets-details/TicketCustomerSection";
+import TicketOrderSection from "@/components/tickets-details/TicketOrderSection";
+import TicketPaymentSection from "@/components/tickets-details/TicketPaymentSection";
 
 interface Ticket {
   _id: string;
@@ -221,8 +220,6 @@ const TicketDetail = () => {
           hasChanges={hasChanges}
           handleDeletePayment={handleDeletePayment}
         />
-
-        <ReceiptDownloadButton orderId={ticket._id} />
       </form>
     </div>
   );
