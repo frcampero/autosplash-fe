@@ -46,10 +46,10 @@ const CreateTicket = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`${API}/api/customers`, getAuthHeaders())
-      .then((res) => setClientes(res.data));
-    axios.get(`${API}/api/prices`).then((res) => setPriceItems(res.data));
+    axios.get(`${API}/api/customers`, getAuthHeaders()).then((res) => {
+      const data = Array.isArray(res.data) ? res.data : res.data.results;
+      setClientes(data || []);
+    });
   }, []);
 
   const handleChange = (
