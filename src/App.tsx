@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import PublicRoute from "./components/PublicRoute";
 import PublicOrderPage from "./pages/orders/OrderPublicPage";
 import Customers from "./pages/customers/Customer";
+import CustomerProfile from "./pages/customers/CustomerProfile";
 import EditCustomerForm from "./pages/customers/EditCustomerForm";
 
 function App() {
@@ -39,7 +40,8 @@ function App() {
             <Route path="/tickets/nuevo" element={<CreateTicket />} />
             <Route path="/tickets/:id" element={<TicketDetail />} />
             <Route path="/clientes" element={<Customers />} />
-            <Route path="/clientes/:id" element={<EditCustomerForm />} />
+            <Route path="/clientes/:id" element={<CustomerProfile />} />
+            <Route path="/clientes/edit/:id" element={<EditCustomerForm />} />
             <Route path="/precios" element={<Prices />} />
           </Route>
 

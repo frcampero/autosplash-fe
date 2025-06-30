@@ -30,7 +30,7 @@ const EditCustomerForm = () => {
         toast.error("Error al cargar cliente");
       }
     };
-    console.log("ID del cliente:", id);
+
     fetchCustomer();
   }, [id]);
 
@@ -44,9 +44,9 @@ const EditCustomerForm = () => {
         getAuthHeaders()
       );
       toast.success("Cliente actualizado");
-      navigate("/clientes");
+      navigate(`/clientes/${id}`); // Volver al perfil actualizado
     } catch (err) {
-        console.error("Error al cargar cliente:", err);
+      console.error("Error al actualizar cliente:", err);
       toast.error("Error al actualizar cliente");
     }
   };

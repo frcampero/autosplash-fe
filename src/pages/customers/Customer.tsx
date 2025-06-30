@@ -22,7 +22,10 @@ const Customers = () => {
     const fetchCustomers = async () => {
       try {
         const res = await axios.get(`${API}/api/customers`, getAuthHeaders());
-        setCustomers(res.data.results || res.data || []);
+
+        // Ajuste por si tu backend devuelve { results: [...] } o solo un array plano
+        const data = Array.isArray(res.data) ? res.data : res.data.results;
+        setCustomers(data || []);
       } catch (err) {
         console.error("❌ Error al cargar clientes:", err);
       }
@@ -56,13 +59,21 @@ const Customers = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="focus:outline-none focus:ring-0"
                     onClick={() => navigate(`/clientes/${c._id}`)}
                   >
-                    Editar
+                    Ver perfil
                   </Button>
                 </td>
               </tr>
             ))}
+            {customers.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
+                  No hay clientes registrados.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
