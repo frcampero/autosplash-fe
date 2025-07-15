@@ -15,10 +15,11 @@ const Login = () => {
 
     const API = import.meta.env.VITE_API_URL;
     try {
-      const res = await axios.post<{ token: string }>(`${API}/api/auth/login`, {
-        email,
-        password,
-      });
+      const res = await axios.post<{ token: string }>(
+        `${API}/api/auth/login`,
+        { email, password },
+        { withCredentials: true } // ✅ ESTA LÍNEA
+      );
 
       localStorage.setItem("token", res.data.token);
       navigate("/");
@@ -41,7 +42,7 @@ const Login = () => {
       setCheckingAuth(false);
     }
   }, []);
-  
+
   return (
     <div className="min-h-screen flex">
       {/* Columna izquierda */}
