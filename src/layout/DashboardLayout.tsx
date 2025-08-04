@@ -8,7 +8,6 @@ const DashboardLayout = () => {
       <div className="flex-1 overflow-y-auto bg-gray-50">
         {/* Espacio Menu */}
         <div className="md:hidden h-16" />
-
         <main className="p-6">
           <Outlet />
         </main>

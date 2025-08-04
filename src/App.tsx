@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardLayout from "./layout/DashboardLayout";
-import Home from "./pages/home/Home";
-import Tickets from "./pages/tickets/Tickets";
-import CreateTicket from "./pages/tickets/CreateTickets";
-import TicketDetail from "./pages/tickets/TicketDetail";
-import Prices from "./pages/prices/Prices";
-import Login from "./pages/auth/Login";
-import PrivateRoute from "./components/PrivateRoute";
+import Home from "./features/dashboard/pages/DashboardHome";
+import Orders from "./features/orders/pages/OrderList";
+import CreateOrder from "./features/orders/pages/CreateOrder";
+import OrderDetail from "./features/orders/pages/OrderDetail";
+import Prices from "./features/prices/pages/Prices";
+import Login from "./features/auth/LoginPage";
+import PrivateRoute from "./components/routes/PrivateRoute";
 import { Toaster } from "sonner";
-import PublicRoute from "./components/PublicRoute";
-import PublicOrderPage from "./pages/orders/OrderPublicPage";
-import Customers from "./pages/customers/Customer";
-import CustomerProfile from "./pages/customers/CustomerProfile";
-import EditCustomerForm from "./pages/customers/EditCustomerForm";
+import PublicRoute from "./components/routes/PublicRoute";
+import PublicOrderView from "./features/orders/pages/PublicOrderView";
+import Customers from "./features/customers/pages/Customer";
+import CustomerProfile from "./features/customers/pages/CustomerProfile";
+import EditCustomerForm from "./features/customers/pages/EditCustomerForm";
 
 function App() {
   return (
@@ -36,17 +36,17 @@ function App() {
             }
           >
             <Route path="/" element={<Home />} />
-            <Route path="/tickets" element={<Tickets />} />
-            <Route path="/tickets/nuevo" element={<CreateTicket />} />
-            <Route path="/tickets/:id" element={<TicketDetail />} />
-            <Route path="/clientes" element={<Customers />} />
-            <Route path="/clientes/:id" element={<CustomerProfile />} />
-            <Route path="/clientes/edit/:id" element={<EditCustomerForm />} />
-            <Route path="/precios" element={<Prices />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/nuevo" element={<CreateOrder />} />
+            <Route path="/orders/:id" element={<OrderDetail />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/customers/:id" element={<CustomerProfile />} />
+            <Route path="/customers/edit/:id" element={<EditCustomerForm />} />
+            <Route path="/prices" element={<Prices />} />
           </Route>
 
           {/* Ruta pública */}
-          <Route path="/orders/:id" element={<PublicOrderPage />} />
+          <Route path="/lookup/:orderId" element={<PublicOrderView />} />
         </Routes>
       </BrowserRouter>
       <Toaster richColors position="top-right" />

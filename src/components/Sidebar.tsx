@@ -4,6 +4,8 @@ import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Users } from "lucide-react";
+import { logout } from "@/lib/api";
+import { toast } from "sonner";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -12,14 +14,21 @@ const Sidebar = () => {
 
   const links = [
     { to: "/", icon: <Home size={20} />, label: "Inicio" },
-    { to: "/tickets", icon: <FileText size={20} />, label: "Tickets" },
-    { to: "/clientes", icon: <Users size={20} />, label: "Clientes" },
-    { to: "/precios", icon: <Tag size={20} />, label: "Precios" },
+    { to: "/orders", icon: <FileText size={20} />, label: "Ordenes" },
+    { to: "/customers", icon: <Users size={20} />, label: "Clientes" },
+    { to: "/prices", icon: <Tag size={20} />, label: "Precios" },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await logout(); // Llama al backend para borrar la cookie
+      localStorage.removeItem("token"); // Borra token local
+      toast.success("Sesión cerrada correctamente");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+      toast.error("Hubo un problema al cerrar sesión");
+    }
   };
 
   return (
@@ -67,7 +76,9 @@ const Sidebar = () => {
       <div
         className={cn(
           "fixed inset-0 z-40 bg-white md:hidden transition-opacity duration-300",
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          open
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         )}
         onClick={() => setOpen(false)}
       />
@@ -78,7 +89,12 @@ const Sidebar = () => {
         )}
       >
         <div className="flex justify-end mb-4 bg-white">
-          <Button variant="outline" size="icon" onClick={() => setOpen(false)} className="bg-white">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setOpen(false)}
+            className="bg-white"
+          >
             <X />
           </Button>
         </div>
