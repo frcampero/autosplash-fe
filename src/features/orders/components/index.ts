@@ -9,3 +9,4 @@ export { default as OrderCustomerSection } from "./OrderCustomerSection";
 export { default as ReceiptDownloadButton } from "./ReceiptDownloadButton";
 export { default as OrderSection } from "./OrderSection"
 export { default as OrderPaymentSection } from "./OrderPaymentSection"
+export { default as EditOrderItemsDialog } from "./EditOrderItemsDialog";

@@ -1,86 +1,167 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAuthHeaders } from "@/lib/api";
 import CustomerTable from "../components/customerTable";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from "@/components/ui/pagination";
+import { useDebounce } from "../hooks/useDebounce";
+import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import type { Customer } from "@/types/customer";
 
 const API = import.meta.env.VITE_API_URL;
-
-interface Customer {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  address?: string;
-}
 
 const Customers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const navigate = useNavigate();
+  const debouncedSearch = useDebounce(search, 500);
+
+  const fetchCustomers = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "10",
+        search: debouncedSearch,
+      });
+      const res = await axios.get(
+        `${API}/api/customers?${params.toString()}`,
+        getAuthHeaders()
+      );
+
+      setCustomers(res.data.results || []);
+      setTotalPages(res.data.totalPages || 1);
+      setCurrentPage(res.data.currentPage || 1);
+    } catch (err) {
+      console.error("❌ Error al cargar clientes:", err);
+    }
+  }, [currentPage, debouncedSearch]);
 
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const res = await axios.get(`${API}/api/customers`, getAuthHeaders());
-        const data = Array.isArray(res.data) ? res.data : res.data.results;
-        setCustomers(data || []);
-      } catch (err) {
-        console.error("❌ Error al cargar clientes:", err);
-      }
-    };
-
     fetchCustomers();
-  }, []);
+  }, [fetchCustomers]);
 
-  const filteredCustomers = customers.filter((c) => {
-    const fullName = `${c.firstName} ${c.lastName}`.toLowerCase();
-    const phone = c.phone?.toLowerCase() || "";
-    const address = c.address?.toLowerCase() || "";
-    const term = search.toLowerCase();
-    return (
-      fullName.includes(term) ||
-      phone.includes(term) ||
-      address.includes(term)
-    );
-  });
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
 
   const clearFilters = () => {
     setSearch("");
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Clientes</h2>
-        {/* Podés agregar un botón para nuevo cliente en el futuro */}
-        {/* <Button>+ Nuevo cliente</Button> */}
+        <h2 className="text-2xl font-bold tracking-tight">Clientes</h2>
+        <Button
+          onClick={() => navigate("/customers/new")}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nuevo cliente
+        </Button>
       </div>
 
       <div className="bg-white p-4 mb-4 rounded-md shadow-sm flex flex-wrap gap-4 items-end">
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Buscar
+        <div className="flex-grow">
+          <label
+            htmlFor="search-customer"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Buscar cliente
           </label>
-          <input
+          <Input
+            id="search-customer"
             type="text"
-            placeholder="Nombre, teléfono o dirección..."
+            placeholder="Nombre, teléfono, email o dirección..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-0 w-64"
+            onChange={handleSearchChange}
+            className="w-full"
           />
         </div>
-
-        <div>
-          <button
+        <div className="flex justify-end">
+          <Button
             onClick={clearFilters}
-            className="text-sm text-gray-600 bg-white border border-gray-200 rounded px-3 py-1 hover:bg-gray-50 focus:outline-none focus:ring-0"
+            variant="outline"
           >
-            Limpiar filtros
-          </button>
+            Limpiar
+          </Button>
         </div>
       </div>
 
-      <CustomerTable customers={filteredCustomers} search={search} />
+      <CustomerTable
+        customers={customers}
+        loading={false}
+        refreshCustomers={fetchCustomers}
+      />
+
+      {totalPages > 1 && (
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(currentPage - 1);
+                  }}
+                  className={
+                    currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
+
+              {[...Array(totalPages).keys()].map((page) => (
+                <PaginationItem key={page + 1}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === page + 1}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(page + 1);
+                    }}
+                  >
+                    {page + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(currentPage + 1);
+                  }}
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </>
   );
 };

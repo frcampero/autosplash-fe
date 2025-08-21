@@ -11,11 +11,11 @@ import {
 import { useState } from "react";
 
 interface Props {
-  onConfirm: () => void;
+  onDelete: () => void;
   children: React.ReactNode;
 }
 
-const DeleteOrderDialog = ({ onConfirm, children }: Props) => {
+const DeleteOrderDialog = ({ onDelete, children }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -33,7 +33,7 @@ const DeleteOrderDialog = ({ onConfirm, children }: Props) => {
           <AlertDialogAction
             type="button"
             onClick={() => {
-              onConfirm();
+              onDelete();
               setOpen(false);
             }}
             className="bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-0"

@@ -1,6 +1,22 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Trash2 } from "lucide-react";
 
 interface PrendasFormProps {
   priceItems: any[];
@@ -43,75 +59,81 @@ const PrendasForm = ({
   };
 
   return (
-    <fieldset className="border rounded p-4 flex flex-col h-full">
-      <legend className="text-sm font-semibold text-gray-700 mb-2">
-        Prendas
-      </legend>
+    <Card>
+      <CardHeader>
+        <CardTitle>Prendas</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-4">
+          {/* Select + Botón */}
+          <div className="flex items-center gap-2">
+            <Select value={selectedValue} onValueChange={setSelectedValue}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar prenda..." />
+              </SelectTrigger>
+              <SelectContent>
+                {priceItems.map((item) => (
+                  <SelectItem key={item._id} value={item._id}>
+                    {item.name} (
+                    {item.type === "por_prenda"
+                      ? `${item.points}P`
+                      : `$${item.price}`}
+                    )
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-      {/* Select + Botón */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-        <select
-          className="border rounded px-3 py-2 text-sm bg-white text-gray-800 w-full focus:outline-none focus:ring-0"
-          value={selectedValue}
-          onChange={(e) => setSelectedValue(e.target.value)}
-        >
-          <option value="">Seleccionar prenda...</option>
-          {priceItems.map((item) => (
-            <option key={item._id} value={item._id}>
-              {item.name} (
-              {item.type === "por_prenda"
-                ? `${item.points}P`
-                : `$${item.price}`}
-              )
-            </option>
-          ))}
-        </select>
-
-        <Button type="button" onClick={handleAddPrenda}>
-          Agregar
-        </Button>
-      </div>
-
-      {/* Lista de prendas */}
-      <div className="grid grid-cols-1 gap-2 mt-2 mb-2">
-        {selectedItems.map(({ item, quantity }, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center bg-gray-50 p-2 rounded"
-          >
-            <div className="flex items-center justify-between gap-2 col-span-2">
-              <span className="text-sm">{item.name}</span>
-              <input
-                type="number"
-                min={1}
-                className="border rounded text-center bg-white w-10"
-                value={quantity}
-                onChange={(e) => {
-                  const updated = [...selectedItems];
-                  updated[index].quantity = Number(e.target.value);
-                  setSelectedItems(updated);
-                }}
-              />
-            </div>
-
-            <button
-              className="text-red-500 text-xs bg-white border border-red-300 rounded px-2 py-1 hover:bg-red-50 hover:border-red-500 focus:outline-none w-full col-span-1"
-              type="button"
-              onClick={() => {
-                setSelectedItems(selectedItems.filter((_, i) => i !== index));
-              }}
-            >
-              Eliminar
-            </button>
+            <Button type="button" onClick={handleAddPrenda} className="ml-auto">
+              Agregar
+            </Button>
           </div>
-        ))}
-      </div>
 
-      {/* Total calculado fijo al fondo */}
-      <div className="text-sm text-gray-600 text-right mt-auto pt-4 border-t border-gray-200">
-        Total calculado: ${totalCalculado}
-      </div>
-    </fieldset>
+          {/* Lista de prendas */}
+          <div className="space-y-2">
+            {selectedItems.map(({ item, quantity }, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between gap-4 bg-muted/50 p-2 rounded-lg"
+              >
+                <span className="text-sm font-medium flex-1">{item.name}</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    className="h-8 w-16 text-center"
+                    value={quantity}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      const updated = [...selectedItems];
+                      updated[index].quantity = Number(e.target.value);
+                      setSelectedItems(updated);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-red-500 hover:text-red-600"
+                    type="button"
+                    onClick={() => {
+                      const updated = [...selectedItems];
+                      updated.splice(index, 1);
+                      setSelectedItems(updated);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-end bg-gray-50 dark:bg-gray-800 p-4 rounded-b-lg">
+        <p className="text-lg font-semibold">
+          Total: ${totalCalculado.toFixed(2)}
+        </p>
+      </CardFooter>
+    </Card>
   );
 };
 

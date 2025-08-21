@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { getAuthHeaders } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import OrderDetailsForm from "@/features/orders/components/OrderDetailsForm";
-import {
-  ClienteForm,
-  PrendasForm,
-  PaymentForm,
-} from "@/features/orders/components";
+import CustomerForm from "@/features/orders/components/CustomerForm";
+import PrendasForm from "@/features/orders/components/PrendasForm";
+import PaymentForm from "@/features/orders/components/PaymentForm";
+import { ArrowLeft, Check, ShoppingCart, User, Wallet } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -26,7 +26,26 @@ interface SelectedItem {
   quantity: number;
 }
 
+const STEPS = [
+  {
+    id: 1,
+    name: "Cliente",
+    icon: <User className="h-5 w-5" />,
+  },
+  {
+    id: 2,
+    name: "Prendas y Detalles",
+    icon: <ShoppingCart className="h-5 w-5" />,
+  },
+  {
+    id: 3,
+    name: "Resumen y Pago",
+    icon: <Wallet className="h-5 w-5" />,
+  },
+];
+
 const CreateOrder = () => {
+  const [currentStep, setCurrentStep] = useState(1);
   const [clientes, setClientes] = useState([]);
   const [priceItems, setPriceItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
@@ -48,10 +67,15 @@ const CreateOrder = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API}/api/customers`, getAuthHeaders()).then((res) => {
-      const data = Array.isArray(res.data) ? res.data : res.data.results;
-      setClientes(data || []);
-    });
+    axios
+      .get(`${API}/api/customers`, {
+        ...getAuthHeaders(),
+        params: { limit: 9999 },
+      })
+      .then((res) => {
+        const data = Array.isArray(res.data) ? res.data : res.data.results;
+        setClientes(data || []);
+      });
   }, []);
 
   useEffect(() => {
@@ -67,11 +91,27 @@ const CreateOrder = () => {
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setForm({ ...form, [name]: value });
+  };
+
+  const nextStep = () => {
+    if (currentStep === 1) {
+      if (!form.clienteExistente && (!form.firstName || !form.lastName)) {
+        toast.error("Debe seleccionar un cliente o registrar uno nuevo.");
+        return;
+      }
+    }
+    setCurrentStep((prev) => (prev < STEPS.length ? prev + 1 : prev));
+  };
+
+  const prevStep = () => {
+    setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,10 +119,6 @@ const CreateOrder = () => {
     setIsLoading(true);
 
     try {
-      if (selectedItems.length === 0) {
-        throw new Error("Debe seleccionar al menos una prenda.");
-      }
-
       const pagado = parseFloat(form.pagado || "0");
       if (isNaN(pagado) || pagado < 0) throw new Error("Monto pagado inválido");
 
@@ -133,14 +169,6 @@ const CreateOrder = () => {
         })),
       };
 
-      console.log("Enviando al backend:", {
-        ...payload,
-        items: selectedItems.map(({ item, quantity }) => ({
-          itemId: item._id,
-          quantity,
-        })),
-      });
-
       const orderRes = await axios.post(
         `${API}/api/orders`,
         payload,
@@ -188,38 +216,126 @@ const CreateOrder = () => {
     }
   };
 
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <CustomerForm
+            clientes={clientes}
+            form={form}
+            handleChange={handleChange}
+            setForm={setForm}
+          />
+        );
+      case 2:
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <PrendasForm
+                priceItems={priceItems}
+                selectedItems={selectedItems}
+                setSelectedItems={setSelectedItems}
+              />
+            </div>
+            <div className="lg:col-span-1 space-y-6">
+              <OrderDetailsForm
+                form={form}
+                handleChange={handleChange}
+                handleSelectChange={handleSelectChange}
+              />
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <PaymentForm
+            form={form}
+            handleChange={handleChange}
+            handleSelectChange={handleSelectChange}
+            selectedItems={selectedItems}
+            isLoading={isLoading}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div>
-      <Link to="/orders">
-        <Button 
-        variant="outline" 
-        className="mb-4 focus:outline-none">
-          ← Volver
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex items-center mb-8">
+        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4" />
         </Button>
-      </Link>
-      <h1 className="text-2xl font-bold mb-4">Crear Orden</h1>
+        <h1 className="text-2xl font-bold ml-4">Crear Nueva Orden</h1>
+      </div>
+
+      <div className="relative flex justify-between items-center w-full max-w-md mx-auto mb-8">
+        <div className="absolute left-0 top-1/2 w-full h-0.5 bg-gray-200 -translate-y-1/2"></div>
+        <div
+          className="absolute left-0 top-1/2 h-0.5 bg-blue-600 transition-all duration-300 -translate-y-1/2"
+          style={{
+            width: `calc(${
+              ((currentStep - 1) / (STEPS.length - 1)) * 100
+            }% )`,
+          }}
+        ></div>
+        {STEPS.map((step) => (
+          <div key={step.id} className="relative z-10">
+            <div
+              className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 ${
+                step.id <= currentStep
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              {step.id < currentStep ? (
+                <Check className="w-5 h-5" />
+              ) : (
+                step.icon
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
       <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6"
+        onSubmit={(e) => {
+          if (currentStep === STEPS.length) {
+            handleSubmit(e);
+          } else {
+            e.preventDefault();
+            nextStep();
+          }
+        }}
+        className="space-y-6"
       >
-        <ClienteForm
-          form={form}
-          clientes={clientes}
-          handleChange={handleChange}
-          setForm={setForm}
-        />
-        <OrderDetailsForm form={form} handleChange={handleChange} />
-        <PrendasForm
-          priceItems={priceItems}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-        />
-        <PaymentForm
-          form={form}
-          handleChange={handleChange}
-          selectedItems={selectedItems}
-          isLoading={isLoading}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>{STEPS[currentStep - 1].name}</CardTitle>
+          </CardHeader>
+          <CardContent>{renderStepContent()}</CardContent>
+        </Card>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-6">
+          {currentStep > 1 ? (
+            <Button type="button" variant="outline" onClick={prevStep}>
+              Anterior
+            </Button>
+          ) : (
+            <div />
+          )}
+          {currentStep < STEPS.length ? (
+            <Button type="submit">
+              Siguiente
+            </Button>
+          ) : (
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creando Orden..." : "Finalizar y Crear Orden"}
+            </Button>
+          )}
+        </div>
       </form>
     </div>
   );

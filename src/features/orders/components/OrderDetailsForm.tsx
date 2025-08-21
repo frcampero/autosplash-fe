@@ -1,65 +1,104 @@
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 interface OrderDetailsFormProps {
   form: any;
-  handleChange: (e: React.ChangeEvent<any>) => void;
+  handleChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  handleSelectChange: (name: string, value: string) => void;
 }
 
-const OrderDetailsForm = ({ form, handleChange }: OrderDetailsFormProps) => {
+const OrderDetailsForm = ({
+  form,
+  handleChange,
+  handleSelectChange,
+}: OrderDetailsFormProps) => {
   return (
-    <fieldset className="space-y-3 border rounded p-4">
-      <legend className="text-sm font-semibold text-gray-700 mb-2">
-        Datos de orden
-      </legend>
+    <Card>
+      <CardHeader>
+        <CardTitle>Datos de orden</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>Estado</Label>
+          <Select
+            name="estado"
+            value={form.estado}
+            onValueChange={(value) => handleSelectChange("estado", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Recibido">Recibido</SelectItem>
+              <SelectItem value="En progreso">En progreso</SelectItem>
+              <SelectItem value="Completado">Completado</SelectItem>
+              <SelectItem value="Entregado">Entregado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <label className="text-sm font-medium">Estado</label>
-        <select
-          name="estado"
-          value={form.estado}
-          onChange={handleChange}
-          className="w-full border rounded px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-0"
-        >
-          <option value="Recibido">Recibido</option>
-          <option value="En progreso">En progreso</option>
-          <option value="Completado">Completado</option>
-          <option value="Entregado">Entregado</option>
-        </select>
-      </div>
+        <div className="space-y-2">
+          <Label>Tipo de entrega</Label>
+          <Select
+            name="deliveryType"
+            value={form.deliveryType}
+            onValueChange={(value) => handleSelectChange("deliveryType", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar tipo de entrega" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="estándar">Estándar</SelectItem>
+              <SelectItem value="urgente">Urgente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <label className="text-sm font-medium">Tipo de entrega</label>
-        <select
-          name="deliveryType"
-          value={form.deliveryType}
-          onChange={handleChange}
-          className="w-full border rounded px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-0"
-        >
-          <option value="estándar">Estándar</option>
-          <option value="urgente">Urgente</option>
-        </select>
-      </div>
+        <div className="space-y-2">
+          <Label>Nivel de cuidado</Label>
+          <Select
+            name="careLevel"
+            value={form.careLevel}
+            onValueChange={(value) => handleSelectChange("careLevel", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar nivel de cuidado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="delicado">Delicado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <label className="text-sm font-medium">Nivel de cuidado</label>
-        <select
-          name="careLevel"
-          value={form.careLevel}
-          onChange={handleChange}
-          className="w-full border rounded px-3 py-2 bg-white cursor-pointer focus:outline-none focus:ring-0"
-        >
-          <option value="normal">Normal</option>
-          <option value="delicado">Delicado</option>
-        </select>
-      </div>
-
-      <textarea
-        name="descripcion"
-        placeholder="Descripción"
-        value={form.descripcion}
-        onChange={handleChange}
-        rows={4}
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-0"
-      />
-    </fieldset>
+        <div className="space-y-2">
+          <Label htmlFor="descripcion">Descripción</Label>
+          <Textarea
+            id="descripcion"
+            name="descripcion"
+            placeholder="Añade una descripción o notas para la orden..."
+            value={form.descripcion}
+            onChange={handleChange}
+            rows={4}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

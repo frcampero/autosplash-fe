@@ -5,9 +5,10 @@ import { getAuthHeaders } from "@/lib/api";
 
 interface Props {
   orderId: string;
+  className?: string;
 }
 
-const ReceiptDownloadButton = ({ orderId }: Props) => {
+const ReceiptDownloadButton = ({ orderId, className }: Props) => {
   const handleDownload = async () => {
     try {
       const response = await axios.get(
@@ -32,8 +33,8 @@ const ReceiptDownloadButton = ({ orderId }: Props) => {
   };
 
   return (
-    <Button variant="outline" onClick={handleDownload} className="mt-4">
-      Descargar comprobante
+    <Button variant="outline" onClick={handleDownload} className={className}>
+      Descargar PDF
     </Button>
   );
 };

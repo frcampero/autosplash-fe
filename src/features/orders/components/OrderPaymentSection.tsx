@@ -1,6 +1,16 @@
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ReceiptDownloadButton, DeletePaymentButton } from ".";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
 interface Payment {
   _id: string;
@@ -13,7 +23,6 @@ interface Props {
   order: {
     _id: string;
     total: number;
-    createdAt: string;
   };
   payments: Payment[];
   paid: string;
@@ -22,11 +31,21 @@ interface Props {
   newMethod: string;
   setNewMethod: (val: string) => void;
   handleAddPayment: () => void;
-  isSaving: boolean;
-  handleSave: () => void;
-  hasChanges: boolean;
   handleDeletePayment: (id: string) => void;
 }
+
+const getPaymentStatusBadgeClass = (status: string) => {
+  switch (status) {
+    case "Pagado":
+      return "bg-green-100 text-green-800";
+    case "Parcial":
+      return "bg-yellow-100 text-yellow-800";
+    case "Pendiente":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
 
 const OrderPaymentSection = ({
   order,
@@ -37,148 +56,118 @@ const OrderPaymentSection = ({
   newMethod,
   setNewMethod,
   handleAddPayment,
-  isSaving,
-  handleSave,
-  hasChanges,
   handleDeletePayment,
 }: Props) => {
   const totalAbonado = payments.reduce((acc, p) => acc + p.amount, 0);
-  const restante = Math.max(order.total - totalAbonado, 0).toFixed(2);
+  const restante = Math.max(order.total - totalAbonado, 0);
   const estadoPago =
     totalAbonado >= order.total
       ? "Pagado"
       : totalAbonado > 0
       ? "Parcial"
       : "Pendiente";
-  const ultimoMetodo =
-    payments.length > 0 ? payments[0].method : "Sin pagos aún";
-
-  const getPaymentStatusClass = (status: string) => {
-    switch (status) {
-      case "Pagado":
-        return "text-green-600 font-semibold";
-      case "Parcial":
-        return "text-yellow-600 font-semibold";
-      case "Pendiente":
-        return "text-red-600 font-semibold";
-      default:
-        return "text-gray-600";
-    }
-  };
 
   return (
-    <fieldset className="space-y-3 border rounded p-4 flex flex-col justify-between">
-      <legend className="text-sm font-semibold text-gray-700 mb-2">
-        Estado de pago
-      </legend>
-
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-gray-700">Total:</p>
-        <Input
-          readOnly
-          value={order.total.toString()}
-          className="pointer-events-none bg-gray-50 cursor-default"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-gray-700">Abonado:</p>
-        <div className="border border-gray-300 rounded px-3 py-2 bg-gray-50 text-sm text-gray-700">
-          ${Number(paid).toFixed(2)}
+    <Card>
+      <CardHeader>
+        <CardTitle>Pagos y Resumen</CardTitle>
+        <CardDescription>
+          Gestiona los pagos y visualiza el resumen financiero de la orden.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* --- Resumen Financiero --- */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Total de la Orden:</span>
+            <span className="font-bold text-lg">${order.total.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Total Abonado:</span>
+            <span className="font-semibold text-green-600">
+              ${totalAbonado.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center border-t pt-2 mt-2">
+            <span className="font-semibold">Saldo Restante:</span>
+            <span className="font-bold text-xl text-red-600">
+              ${restante.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Estado del Pago:</span>
+            <Badge className={getPaymentStatusBadgeClass(estadoPago)}>
+              {estadoPago}
+            </Badge>
+          </div>
         </div>
-      </div>
 
-      <div className="text-sm text-gray-600">Restante: ${restante}</div>
-      <div className="text-sm">
-        Estado de pago:{" "}
-        <span className={getPaymentStatusClass(estadoPago)}>{estadoPago}</span>
-      </div>
+        {/* --- Historial de Pagos --- */}
+        {payments.length > 0 && (
+          <div>
+            <Label className="text-sm font-medium">Historial de Pagos</Label>
+            <ul className="mt-2 space-y-2 text-sm text-gray-700 border rounded-md p-3">
+              {payments.map((p) => (
+                <li
+                  key={p._id}
+                  className="flex justify-between items-center pb-1"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-semibold">${p.amount.toFixed(2)}</span>
+                    <span className="text-gray-500 text-xs">
+                      {new Date(p.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{p.method}</Badge>
+                    <DeletePaymentButton
+                      onConfirm={() => handleDeletePayment(p._id)}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-      <p className="text-sm text-gray-600">
-        Último método de pago: <strong>{ultimoMetodo}</strong>
-      </p>
-
-      {payments.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium mb-2">Historial de pagos</h4>
-          <ul className="space-y-1 text-sm text-gray-700">
-            {payments.map((p) => (
-              <li
-                key={p._id}
-                className="flex justify-between items-center border-b pb-1"
-              >
-                <div className="flex flex-col">
-                  <span>${p.amount.toFixed(2)}</span>
-                  <span className="text-gray-500 text-xs">
-                    {new Date(p.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>{p.method}</span>
-                  <DeletePaymentButton
-                    onConfirm={() => handleDeletePayment(p._id)}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+        {/* --- Agregar Nuevo Pago --- */}
+        <div>
+          <Label className="text-sm font-medium">Agregar Nuevo Pago</Label>
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              type="number"
+              placeholder="Monto"
+              value={newAmount}
+              onChange={(e) => setNewAmount(e.target.value)}
+              className="bg-white"
+            />
+            <select
+              value={newMethod}
+              onChange={(e) => setNewMethod(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-white cursor-pointer w-full"
+            >
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta de Credito">Tarjeta de Crédito</option>
+              <option value="Tarjeta de debito">Tarjeta de Débito</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
         </div>
-      )}
-
-      <p className="text-sm text-gray-500 mt-2">
-        Días desde creación:{" "}
-        {Math.floor(
-          (Date.now() - new Date(order.createdAt).getTime()) /
-            (1000 * 60 * 60 * 24)
-        )}{" "}
-        días
-      </p>
-
-      <div className="border-t pt-4 mt-4">
-        <h4 className="text-sm font-medium mb-2">Agregar nuevo pago</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Input
-            type="number"
-            placeholder="Monto"
-            value={newAmount}
-            onChange={(e) => setNewAmount(e.target.value)}
-            className="bg-white"
-          />
-          <select
-            value={newMethod}
-            onChange={(e) => setNewMethod(e.target.value)}
-            className="border rounded px-3 py-2 bg-white cursor-pointer"
-          >
-            <option value="Efectivo">Efectivo</option>
-            <option value="Tarjeta de Credito">Tarjeta de Crédito</option>
-            <option value="Tarjeta de debito">Tarjeta de Débito</option>
-            <option value="Transferencia">Transferencia</option>
-          </select>
-          <Button
-            type="button"
-            onClick={handleAddPayment}
-            disabled={
-              !newAmount || isNaN(Number(newAmount)) || Number(newAmount) <= 0
-            }
-          >
-            Agregar
-          </Button>
-        </div>
-      </div>
-
-      <hr className="my-4 border-gray-300" />
-
-      <Button
-        type="submit"
-        className="mt-2"
-        disabled={isSaving || !hasChanges}
-        onClick={handleSave}
-      >
-        {isSaving ? "Guardando..." : "Guardar cambios"}
-      </Button>
-
-      <ReceiptDownloadButton orderId={order._id} />
-    </fieldset>
+      </CardContent>
+      <CardFooter className="flex flex-col gap-2">
+        <Button
+          type="button"
+          onClick={handleAddPayment}
+          disabled={
+            !newAmount || isNaN(Number(newAmount)) || Number(newAmount) <= 0
+          }
+          className="w-full"
+        >
+          Agregar Pago
+        </Button>
+        <ReceiptDownloadButton orderId={order._id} className="w-full" />
+      </CardFooter>
+    </Card>
   );
 };
 

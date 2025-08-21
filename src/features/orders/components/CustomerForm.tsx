@@ -5,6 +5,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -15,6 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface ClienteFormProps {
   form: any;
@@ -48,106 +55,129 @@ const ClienteForm = ({
   };
 
   return (
-    <fieldset className="space-y-3 border rounded p-4">
-      <legend className="text-sm font-semibold text-gray-700 mb-2">
-        Datos del cliente
-      </legend>
+    <Card>
+      <CardHeader>
+        <CardTitle>Datos del cliente</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Cliente existente</label>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between"
+              >
+                {selectedCliente
+                  ? `${selectedCliente.firstName} ${selectedCliente.lastName} - ${selectedCliente.phone}`
+                  : "-- Nuevo cliente --"}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+              <Command>
+                <CommandInput placeholder="Buscar cliente..." />
+                <CommandList>
+                  <CommandEmpty>No se encontró cliente.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="nuevo"
+                      onSelect={() => {
+                        clearCliente();
+                        setOpen(false);
+                      }}
+                    >
+                      <span className="italic">-- Nuevo cliente --</span>
+                    </CommandItem>
+                    {clientes.map((cliente) => (
+                      <CommandItem
+                        key={cliente._id}
+                        value={`${cliente.firstName} ${cliente.lastName} ${cliente.phone}`}
+                        onSelect={() => {
+                          setForm({
+                            ...form,
+                            clienteExistente: cliente._id,
+                          });
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            form.clienteExistente === cliente._id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {cliente.firstName} {cliente.lastName} - {cliente.phone}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
 
-      <div>
-        <label className="text-sm font-medium mb-1 block focus:outline-none focus:ring-0">Cliente existente</label>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-full justify-between focus:outline-none focus:ring-0"
-            >
-              {selectedCliente
-                ? `${selectedCliente.firstName} ${selectedCliente.lastName} - ${selectedCliente.phone}`
-                : "-- Nuevo cliente --"}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 focus:outline-none focus:ring-0 cursor-pointer" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0">
-            <Command>
-              <CommandInput placeholder="Buscar cliente..." />
-              <CommandEmpty>No se encontró cliente</CommandEmpty>
-              <CommandGroup>
-                <CommandItem
-                  value="nuevo"
-                  onSelect={() => {
-                    clearCliente();
-                    setOpen(false);
-                  }}
-                  className="cursor-pointer"
-                >
-                  <span className="italic">-- Nuevo cliente --</span>
-                </CommandItem>
-                {clientes.map((cliente) => (
-                  <CommandItem
-                    key={cliente._id}
-                    value={`${cliente.firstName} ${cliente.lastName} ${cliente.phone}`}
-                    className="cursor-pointer"
-                    onSelect={() => {
-                      setForm({
-                        ...form,
-                        clienteExistente: cliente._id,
-                      });
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        form.clienteExistente === cliente._id
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                    {cliente.firstName} {cliente.lastName} - {cliente.phone}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {!form.clienteExistente && (
-        <>
-          <Input
-            name="firstName"
-            placeholder="Nombre"
-            value={form.firstName}
-            onChange={handleChange}
-          />
-          <Input
-            name="lastName"
-            placeholder="Apellido"
-            value={form.lastName}
-            onChange={handleChange}
-          />
-          <Input
-            name="phone"
-            placeholder="Teléfono"
-            value={form.phone}
-            onChange={handleChange}
-          />
-          <Input
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-          />
-          <Input
-            name="address"
-            placeholder="Dirección"
-            value={form.address}
-            onChange={handleChange}
-          />
-        </>
-      )}
-    </fieldset>
+        {!form.clienteExistente && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="firstName">Nombre</label>
+              <Input
+                id="firstName"
+                name="firstName"
+                placeholder="Juan"
+                value={form.firstName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="lastName">Apellido</label>
+              <Input
+                id="lastName"
+                name="lastName"
+                placeholder="Rodriguez"
+                value={form.lastName}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="phone">Teléfono</label>
+              <Input
+                id="phone"
+                name="phone"
+                placeholder="1122334455"
+                value={form.phone}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="email">Email</label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="test@ejemplo.com"
+                value={form.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label htmlFor="address">Dirección</label>
+              <Input
+                id="address"
+                name="address"
+                placeholder="Av. San Martin 123"
+                value={form.address}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

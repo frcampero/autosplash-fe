@@ -13,6 +13,7 @@ import PublicOrderView from "./features/orders/pages/PublicOrderView";
 import Customers from "./features/customers/pages/Customer";
 import CustomerProfile from "./features/customers/pages/CustomerProfile";
 import EditCustomerForm from "./features/customers/pages/EditCustomerForm";
+import NewCustomerForm from "./features/customers/pages/NewCustomerForm";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="/orders/nuevo" element={<CreateOrder />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/customers" element={<Customers />} />
+            <Route path="/customers/new" element={<NewCustomerForm />} />
             <Route path="/customers/:id" element={<CustomerProfile />} />
             <Route path="/customers/edit/:id" element={<EditCustomerForm />} />
             <Route path="/prices" element={<Prices />} />

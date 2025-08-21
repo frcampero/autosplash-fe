@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAuthHeaders } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -17,73 +17,40 @@ import { Label } from "@/components/ui/label";
 
 const API = import.meta.env.VITE_API_URL;
 
-const EditCustomerForm = () => {
-  const { id } = useParams();
+const NewCustomerForm = () => {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCustomer = async () => {
-      try {
-        const res = await axios.get(
-          `${API}/api/customers/${id}`,
-          getAuthHeaders()
-        );
-        const c = res.data;
-        setFirstName(c.firstName);
-        setLastName(c.lastName);
-        setPhone(c.phone || "");
-        setAddress(c.address || "");
-      } catch (err) {
-        toast.error("Error al cargar los datos del cliente");
-        navigate("/customers");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomer();
-  }, [id, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      await axios.put(
-        `${API}/api/customers/${id}`,
-        { firstName, lastName, phone, address },
+      const response = await axios.post(
+        `${API}/api/customers`,
+        { firstName, lastName, phone, email, address },
         getAuthHeaders()
       );
-      toast.success("Cliente actualizado correctamente");
-      navigate(`/customers/${id}`);
+      toast.success("Cliente creado correctamente");
+      navigate(`/customers/${response.data._id}`);
     } catch (err) {
-      console.error("Error al actualizar cliente:", err);
-      toast.error("No se pudo actualizar el cliente");
+      console.error("Error al crear cliente:", err);
+      toast.error("No se pudo crear el cliente");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="p-6 text-center">
-        Cargando datos del cliente...
-      </div>
-    );
-  }
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
-            <CardTitle>Editar Cliente</CardTitle>
+            <CardTitle>Nuevo Cliente</CardTitle>
             <CardDescription>
-              Actualiza los datos del cliente. Haz clic en guardar cuando
-              hayas terminado.
+              Completa los datos para crear un nuevo cliente.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -122,6 +89,17 @@ const EditCustomerForm = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Ej: juan.perez@correo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="address">Dirección</Label>
               <Input
                 id="address"
@@ -140,7 +118,7 @@ const EditCustomerForm = () => {
             >
               Cancelar
             </Button>
-            <Button type="submit">Guardar Cambios</Button>
+            <Button type="submit">Crear Cliente</Button>
           </CardFooter>
         </Card>
       </form>
@@ -148,4 +126,4 @@ const EditCustomerForm = () => {
   );
 };
 
-export default EditCustomerForm;
+export default NewCustomerForm;

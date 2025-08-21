@@ -8,11 +8,18 @@ import DatePicker from "react-datepicker";
 import { registerLocale } from "react-datepicker";
 import { es } from "date-fns/locale";
 import type { Order } from "@/types/order";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const API = import.meta.env.VITE_API_URL;
 
 registerLocale("es", es);
-
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -22,10 +29,31 @@ const Orders = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-  const fetchOrders = async () => {
+  // --- Estados de paginación ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+
+  const fetchOrders = async (page = 1) => {
+    setLoading(true);
     try {
-      const res = await axios.get(`${API}/api/orders`, getAuthHeaders());
-      setOrders(res.data.results || res.data);
+      const res = await axios.get(`${API}/api/orders`, {
+        ...getAuthHeaders(),
+        params: {
+          page,
+          limit: 20,
+          status: statusFilter === "Todos" ? undefined : statusFilter,
+          search: searchTerm || undefined,
+          startDate: startDate?.toISOString(),
+          endDate: endDate?.toISOString(),
+        },
+      });
+
+      
+      setOrders(res.data.docs || []);
+      setTotalPages(res.data.totalPages || 1);
+      setCurrentPage(res.data.page || 1);
+      setTotalOrders(res.data.totalDocs || 0);
     } catch (err) {
       console.error("❌ Error al traer las ordenes:", err);
     } finally {
@@ -34,36 +62,30 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(currentPage);
+  }, [currentPage, statusFilter, searchTerm, startDate, endDate]);
 
-  const filteredOrders = orders.filter((order) => {
-    const matchStatus =
-      statusFilter === "Todos" ? true : order.status === statusFilter;
-
-    const fullName = order.customerId
-      ? `${order.customerId.firstName} ${order.customerId.lastName}`.toLowerCase()
-      : "";
-    const matchName = fullName.includes(searchTerm.toLowerCase());
-
-    const orderDate = new Date(order.createdAt);
-    const matchStart = startDate ? orderDate >= startDate : true;
-    const matchEnd = endDate ? orderDate <= endDate : true;
-
-    return matchStatus && matchName && matchStart && matchEnd;
-  });
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   const clearFilters = () => {
     setStatusFilter("Todos");
     setSearchTerm("");
     setStartDate(null);
     setEndDate(null);
+    setCurrentPage(1);
   };
+
 
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">Ordenes</h2>
+        <h2 className="text-2xl font-bold">
+          Órdenes ({totalOrders} en total)
+        </h2>
         <Link to="/orders/nuevo">
           <Button>+ Nueva orden</Button>
         </Link>
@@ -77,7 +99,10 @@ const Orders = () => {
           <select
             className="border rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-0 cursor-pointer"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1); 
+            }}
           >
             <option value="Todos">Todos</option>
             <option value="Recibido">Recibido</option>
@@ -96,7 +121,10 @@ const Orders = () => {
             className="border rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-0"
             placeholder="Buscar cliente"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 
@@ -107,7 +135,10 @@ const Orders = () => {
             </label>
             <DatePicker
               selected={startDate}
-              onChange={(date) => setStartDate(date)}
+              onChange={(date) => {
+                setStartDate(date);
+                setCurrentPage(1);
+              }}
               className="border rounded px-2 py-1 text-sm w-full bg-white focus:outline-none focus:ring-0"
               placeholderText="Elegí una fecha"
               dateFormat="dd/MM/yyyy"
@@ -122,7 +153,10 @@ const Orders = () => {
           </label>
           <DatePicker
             selected={endDate}
-            onChange={(date) => setEndDate(date)}
+            onChange={(date) => {
+              setEndDate(date);
+              setCurrentPage(1);
+            }}
             className="border rounded px-2 py-1 text-sm w-full bg-white focus:outline-none focus:ring-0"
             placeholderText="Elegí una fecha"
             dateFormat="dd/MM/yyyy"
@@ -133,18 +167,69 @@ const Orders = () => {
         <div>
           <button
             onClick={clearFilters}
-            className="text-sm text-gray-600 bg-white border border-gray-200 rounded px- py-1 hover:bg-gray-50 focus:outline-none focus:ring-0"
+            className="text-sm text-gray-600 bg-white border border-gray-200 rounded px-3 py-1 hover:bg-gray-50 focus:outline-none focus:ring-0"
           >
-            Limpiar filtros
+            Limpiar
           </button>
         </div>
       </div>
 
       <OrderTable
-        orders={filteredOrders}
+        orders={orders} 
         loading={loading}
-        refreshOrders={fetchOrders}
+        refreshOrders={() => fetchOrders(currentPage)}
       />
+
+      {/* --- Componente de Paginación --- */}
+      <div className="mt-4">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageChange(currentPage - 1);
+                }}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
+              />
+            </PaginationItem>
+
+            {/* Números de página */}
+            {[...Array(totalPages).keys()].map((page) => (
+              <PaginationItem key={page + 1}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === page + 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(page + 1);
+                  }}
+                >
+                  {page + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageChange(currentPage + 1);
+                }}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </>
   );
 };

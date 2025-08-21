@@ -13,18 +13,12 @@ const Login = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // 👇 Agregamos esto para ver exactamente lo que se envía
-    console.log("Email enviado:", JSON.stringify(email));
-    console.log("Password enviado:", JSON.stringify(password));
-
     try {
       await api.post(
         "/api/auth/login",
         { email, password },
         { withCredentials: true }
       );
-      console.log("✅ Login exitoso, redireccionando...");
       navigate("/");
     } catch (err) {
       const axiosError = err as AxiosError<{ error: string }>;

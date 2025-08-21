@@ -69,7 +69,24 @@ button:focus-visible {
   }
 }
 
+/* Scrollbar global personalizado */
+::-webkit-scrollbar {
+  width: 12px;
+  background: #f3f4f6;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
 
+/* Firefox */
+html {
+  scrollbar-color: #d1d5db #f3f4f6;
+  scrollbar-width: thin;
+}
 
 @layer base {
   :root {
