@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type PublicOrderType = {
   order: {
@@ -46,47 +46,58 @@ const PublicOrderPage = () => {
     fetchOrder();
   }, [orderId]);
 
-  if (loading) return <p>Cargando pedido...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!data) return <p>Pedido no encontrado</p>;
+
+  if (loading) return <div className="p-6 text-center text-gray-500">Cargando pedido...</div>;
+  if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
+  if (!data) return <div className="p-6 text-center text-red-500">Pedido no encontrado</div>;
 
   const { order, customer, payments } = data;
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">Estado del Pedido</h1>
+    <div className="max-w-2xl mx-auto p-4">
       <Card>
-        <CardContent className="space-y-3 p-6">
-          <p>
-            <strong>Cliente:</strong> {customer.firstName} {customer.lastName}
-          </p>
-          <p>
-            <strong>Descripción:</strong> {order.description}
-          </p>
-          <p>
-            <strong>Estado:</strong> {order.status}
-          </p>
-          <p>
-            <strong>Prioridad:</strong> {order.priority}
-          </p>
-          <p>
-            <strong>Fecha:</strong>{" "}
-            {new Date(order.createdAt).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Total:</strong> ${order.total}
-          </p>
+        <CardHeader>
+          <CardTitle>Estado del Pedido</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span className="block text-xs text-gray-500 mb-1">Cliente</span>
+              <span className="font-medium">{customer.firstName} {customer.lastName}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-gray-500 mb-1">Fecha</span>
+              <span className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-gray-500 mb-1">Estado</span>
+              <span className="font-medium">{order.status}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-gray-500 mb-1">Prioridad</span>
+              <span className="font-medium">{order.priority}</span>
+            </div>
+            <div className="md:col-span-2">
+              <span className="block text-xs text-gray-500 mb-1">Descripción</span>
+              <span className="text-sm p-3 bg-gray-50 rounded-md border">{order.description}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-gray-500 mb-1">Total</span>
+              <span className="font-medium">${order.total}</span>
+            </div>
+          </div>
 
-          <div className="mt-4">
-            <h2 className="font-semibold">Pagos</h2>
+          <div>
+            <span className="block text-sm font-medium mb-2">Pagos</span>
             {payments.length === 0 ? (
-              <p>No hay pagos registrados</p>
+              <span className="text-sm text-muted-foreground">No hay pagos registrados</span>
             ) : (
-              <ul className="list-disc pl-5">
+              <ul className="mt-2 space-y-2 text-sm text-gray-700 border rounded-md p-3">
                 {payments.map((p, i) => (
-                  <li key={i}>
-                    ${p.amount} - {p.method} -{" "}
-                    {new Date(p.createdAt).toLocaleDateString()}
+                  <li key={i} className="flex justify-between items-center pb-1">
+                    <span className="font-semibold">${p.amount}</span>
+                    <span className="text-gray-500 text-xs">{new Date(p.createdAt).toLocaleDateString()}</span>
+                    <span className="ml-2">{p.method}</span>
                   </li>
                 ))}
               </ul>
