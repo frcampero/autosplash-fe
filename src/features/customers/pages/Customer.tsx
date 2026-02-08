@@ -146,7 +146,7 @@ const Customers = () => {
           <p className="text-sm text-muted-foreground order-2 sm:order-1">
             Mostrando {from}–{to} de {totalCustomers} cliente{totalCustomers !== 1 ? "s" : ""}
           </p>
-          <div className="order-1 sm:order-2">
+          <div className="order-1 sm:order-2 min-w-0 w-full sm:w-auto">
           {totalPages > 1 && (
           <Pagination>
             <PaginationContent>

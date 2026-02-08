@@ -38,10 +38,12 @@ const Home = () => {
         } = res.data;
 
         setChartData(
-          ordersByStatus.map((item: { _id: string; count: number }) => ({
-            estado: item._id,
-            count: item.count,
-          }))
+          ordersByStatus
+            .filter((item: { _id: string }) => item._id !== "Entregado")
+            .map((item: { _id: string; count: number }) => ({
+              estado: item._id,
+              count: item.count,
+            }))
         );
         setTodayOrders(t);
         setRevenueThisMonth(r);

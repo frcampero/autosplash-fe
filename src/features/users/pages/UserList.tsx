@@ -262,6 +262,7 @@ const Users = () => {
             Mostrando {from}–{to} de {totalUsers} usuario{totalUsers !== 1 ? "s" : ""}
           </p>
           {totalPages > 1 && (
+            <div className="min-w-0 w-full sm:w-auto">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
@@ -297,6 +298,7 @@ const Users = () => {
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
+            </div>
           )}
         </div>
       )}

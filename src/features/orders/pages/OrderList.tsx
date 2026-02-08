@@ -200,7 +200,7 @@ const Orders = () => {
         <p className="text-sm text-muted-foreground order-2 sm:order-1">
           Mostrando {from}–{to} de {totalOrders} orden{totalOrders !== 1 ? "es" : ""}
         </p>
-        <div className="order-1 sm:order-2">
+        <div className="order-1 sm:order-2 min-w-0 w-full sm:w-auto">
         <Pagination>
           <PaginationContent>
             <PaginationItem>
