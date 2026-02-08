@@ -175,8 +175,17 @@ const Prices = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/40">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold tracking-tight">Precios</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="min-w-0">
+          <h2 className="text-2xl font-bold tracking-tight">Precios</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Prendas y tarifas del servicio.
+          </p>
+        </div>
+        <Button onClick={handleAddNew} className="w-full sm:w-auto shrink-0">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Añadir prenda
+        </Button>
       </div>
       <div className="bg-card border border-border p-4 mb-4 rounded-xl shadow-sm flex flex-col sm:flex-row flex-wrap gap-4 sm:items-end">
         <div className="flex-grow w-full sm:w-auto min-w-0">
@@ -191,12 +200,6 @@ const Prices = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </div>
-        <div className="flex justify-end">
-          <Button onClick={handleAddNew} size="sm" className="font-medium">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Añadir
-          </Button>
         </div>
       </div>
   <Card className="shadow-md border">
