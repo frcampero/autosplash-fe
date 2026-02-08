@@ -66,9 +66,9 @@ const PrendasForm = ({
       <CardContent>
         <div className="flex flex-col gap-4">
           {/* Select + Botón */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Select value={selectedValue} onValueChange={setSelectedValue}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full sm:flex-1">
                 <SelectValue placeholder="Seleccionar prenda..." />
               </SelectTrigger>
               <SelectContent>
@@ -84,7 +84,7 @@ const PrendasForm = ({
               </SelectContent>
             </Select>
 
-            <Button type="button" onClick={handleAddPrenda} className="ml-auto">
+            <Button type="button" onClick={handleAddPrenda} className="w-full sm:w-auto sm:ml-auto">
               Agregar
             </Button>
           </div>
@@ -94,10 +94,10 @@ const PrendasForm = ({
             {selectedItems.map(({ item, quantity }, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between gap-4 bg-muted/50 p-2 rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 bg-muted/50 p-3 sm:p-2 rounded-lg"
               >
-                <span className="text-sm font-medium flex-1">{item.name}</span>
-                <div className="flex items-center gap-2">
+                <span className="text-sm font-medium flex-1 min-w-0 truncate">{item.name}</span>
+                <div className="flex items-center gap-2 shrink-0">
                   <Input
                     type="number"
                     min={1}
@@ -128,7 +128,7 @@ const PrendasForm = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end bg-gray-50 dark:bg-gray-800 p-4 rounded-b-lg">
+      <CardFooter className="flex justify-end bg-muted/50 p-4 rounded-b-lg">
         <p className="text-lg font-semibold">
           Total: ${totalCalculado.toFixed(2)}
         </p>

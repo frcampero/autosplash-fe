@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import type { AxiosError } from "axios";
+import api from "@/lib/api";
 import { toast } from "sonner";
-import { getAuthHeaders } from "@/lib/api";
 import {
   OrderCustomerSection,
   OrderSection,
@@ -20,20 +20,18 @@ interface Payment {
   createdAt: string;
 }
 
-const API = import.meta.env.VITE_API_URL;
-
 const getStatusBadgeClass = (status: string) => {
   switch (status) {
     case "Recibido":
-      return "bg-blue-100 text-blue-800";
+      return "bg-primary/15 text-primary";
     case "En progreso":
       return "bg-yellow-100 text-yellow-800";
     case "Completado":
       return "bg-green-100 text-green-800";
     case "Entregado":
-      return "bg-gray-200 text-gray-800";
+      return "bg-muted text-foreground";
     default:
-      return "bg-slate-100 text-slate-800";
+      return "bg-muted text-muted-foreground";
   }
 };
 
@@ -54,8 +52,8 @@ const OrderDetail = () => {
     const fetchData = async () => {
       try {
         const [orderRes, paymentsRes] = await Promise.all([
-          axios.get(`${API}/api/orders/${id}`, getAuthHeaders()),
-          axios.get(`${API}/api/payments?orderId=${id}`, getAuthHeaders()),
+          api.get(`/api/orders/${id}`),
+          api.get(`/api/payments?orderId=${id}`),
         ]);
         setOrder(orderRes.data);
         setOriginalOrder(orderRes.data);
@@ -88,21 +86,20 @@ const OrderDetail = () => {
 
     try {
 
-      const res = await axios.put<Order>(
-        `${API}/api/orders/${order._id}`,
-        { status: order.status },
-        getAuthHeaders()
-      );
+      const res = await api.put<Order>(`/api/orders/${order._id}`, {
+        status: order.status,
+      });
 
       setOrder(res.data);
       setOriginalOrder(res.data);
 
       toast.success("Cambios guardados correctamente");
-    } catch (err: any) {
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ error?: string; message?: string }>;
       console.error("Error al guardar", err);
       const errorMsg =
-        err?.response?.data?.error ||
-        err?.response?.data?.message ||
+        axiosErr.response?.data?.error ??
+        axiosErr.response?.data?.message ??
         "Error desconocido";
 
       toast.error("Error al actualizar la orden", {
@@ -121,15 +118,11 @@ const OrderDetail = () => {
     if (!order) return;
 
     try {
-      const res = await axios.post(
-        `${API}/api/payments`,
-        {
-          amount: Number(newAmount),
-          method: newMethod,
-          orderId: order._id,
-        },
-        getAuthHeaders()
-      );
+      const res = await api.post("/api/payments", {
+        amount: Number(newAmount),
+        method: newMethod,
+        orderId: order._id,
+      });
 
       const { payment: newPayment, order: updatedOrder } = res.data;
 
@@ -140,7 +133,7 @@ const OrderDetail = () => {
       toast.success("Pago agregado correctamente");
       setNewAmount("");
       setNewMethod("Efectivo");
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Error al agregar pago:", err);
       toast.error("No se pudo agregar el pago. Revisa la respuesta de la API.");
     }
@@ -149,7 +142,7 @@ const OrderDetail = () => {
   const handleDeletePayment = async (paymentId: string) => {
     if (!order) return;
     try {
-      const res = await axios.delete(`${API}/api/payments/${paymentId}`, getAuthHeaders());
+      const res = await api.delete(`/api/payments/${paymentId}`);
       
       const { order: updatedOrder } = res.data;
 
@@ -158,7 +151,7 @@ const OrderDetail = () => {
       setOriginalOrder(updatedOrder);
 
       toast.success("Pago eliminado correctamente");
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Error al eliminar pago:", err);
       toast.error("No se pudo eliminar el pago. Revisa la respuesta de la API.");
     }
@@ -166,7 +159,7 @@ const OrderDetail = () => {
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-gray-500">
+      <div className="p-6 text-center text-muted-foreground">
         Cargando detalle de la orden...
       </div>
     );
@@ -184,47 +177,52 @@ const OrderDetail = () => {
   const hasChanges = order.status !== originalOrder?.status;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-full overflow-x-hidden">
       {/* --- Header --- */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/orders")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Orden #{order.orderId}
-            </h1>
-            <p className="text-sm text-gray-500">
-              Creada el {new Date(order.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <Badge className={getStatusBadgeClass(order.status)}>{order.status}</Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <EditOrderItemsDialog order={order} onOrderUpdate={handleOrderUpdate}>
-            <Button variant="outline">
-              <Pencil className="w-4 h-4 mr-2" />
-              Editar Prendas
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 min-w-0">
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0"
+              onClick={() => navigate("/orders")}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-          </EditOrderItemsDialog>
-          <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
-            {isSaving ? (
-              <>
-                <Save className="mr-2 h-4 w-4 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Guardar Cambios
-              </>
-            )}
-          </Button>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
+                  Orden #{order.orderId}
+                </h1>
+                <Badge className={getStatusBadgeClass(order.status)}>{order.status}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Creada el {new Date(order.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <EditOrderItemsDialog order={order} onOrderUpdate={handleOrderUpdate}>
+              <Button variant="outline" className="w-full sm:w-auto">
+                <Pencil className="w-4 h-4 mr-2 shrink-0" />
+                Editar Prendas
+              </Button>
+            </EditOrderItemsDialog>
+            <Button onClick={handleSave} disabled={!hasChanges || isSaving} className="w-full sm:w-auto">
+              {isSaving ? (
+                <>
+                  <Save className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Guardar Cambios
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 

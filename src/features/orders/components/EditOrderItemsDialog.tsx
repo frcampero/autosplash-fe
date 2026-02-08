@@ -18,13 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import React, { useState, useEffect } from "react";
 import { Order, OrderItem } from "@/types/order";
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-
-const API = import.meta.env.VITE_API_URL;
 
 interface PriceItem {
     _id: string;
@@ -57,7 +54,7 @@ export default function EditOrderItemsDialog({ order, onOrderUpdate, children }:
 
     useEffect(() => {
         if (isOpen) {
-            axios.get(`${API}/api/prices`, getAuthHeaders())
+            api.get("/api/prices")
                 .then(res => {
                     setAvailableItems(res.data.results || res.data);
                 })
@@ -126,7 +123,9 @@ export default function EditOrderItemsDialog({ order, onOrderUpdate, children }:
                 item: typeof i.item === 'string' ? i.item : i.item._id,
                 quantity: i.quantity
             }));
-            const res = await axios.put<Order>(`${API}/api/orders/${order._id}`, { items: updatedItems }, getAuthHeaders());
+            const res = await api.put<Order>(`/api/orders/${order._id}`, {
+                items: updatedItems,
+            });
             onOrderUpdate(res.data);
             toast.success("Prendas actualizadas correctamente");
             setIsOpen(false);

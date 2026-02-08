@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -38,8 +37,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const API = import.meta.env.VITE_API_URL;
-
 interface PriceItem {
   _id: string;
   name: string;
@@ -59,8 +56,8 @@ const Prices = () => {
 
   const fetchPrices = () => {
     setLoading(true);
-    axios
-      .get(`${API}/api/prices`, getAuthHeaders())
+    api
+      .get("/api/prices")
       .then((res) => {
         const sortedPrices = res.data.sort((a: PriceItem, b: PriceItem) =>
           a.name.localeCompare(b.name)
@@ -122,11 +119,7 @@ const Prices = () => {
         if (!newItem.name || newItem.price <= 0) {
           toast.error("El nuevo artículo debe tener nombre y precio válido.");
         } else {
-          await axios.post(
-            `${API}/api/prices`,
-            { ...newItem, _id: undefined },
-            getAuthHeaders()
-          );
+          await api.post("/api/prices", { ...newItem, _id: undefined });
           toast.success("Nuevo precio creado con éxito.");
         }
       }
@@ -134,11 +127,7 @@ const Prices = () => {
       if (updatedItems.length > 0) {
         await Promise.all(
           updatedItems.map((item) =>
-            axios.put(
-              `${API}/api/prices/${item._id}`,
-              item,
-              getAuthHeaders()
-            )
+            api.put(`/api/prices/${item._id}`, item)
           )
         );
         toast.success("Precios actualizados con éxito.");
@@ -159,7 +148,7 @@ const Prices = () => {
     }
     setSaving(true);
     try {
-      await axios.delete(`${API}/api/prices/${id}`, getAuthHeaders());
+      await api.delete(`/api/prices/${id}`);
       toast.success("Precio eliminado correctamente.");
       fetchPrices();
     } catch (err) {
@@ -185,13 +174,13 @@ const Prices = () => {
     JSON.stringify(prices) !== JSON.stringify(originalPrices);
 
   return (
-    <div className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/40 min-h-screen">
+    <div className="flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/40">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold tracking-tight">Precios</h2>
       </div>
-      <div className="bg-white p-4 mb-4 rounded-md shadow-sm flex flex-wrap gap-4 items-end">
-        <div className="flex-grow">
-          <label htmlFor="search-price" className="block text-sm font-medium text-gray-700 mb-1">Buscar por prenda...</label>
+      <div className="bg-card border border-border p-4 mb-4 rounded-xl shadow-sm flex flex-col sm:flex-row flex-wrap gap-4 sm:items-end">
+        <div className="flex-grow w-full sm:w-auto min-w-0">
+          <label htmlFor="search-price" className="block text-sm font-medium text-foreground mb-1">Buscar por prenda...</label>
           <div className="relative w-full md:w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -239,13 +228,13 @@ const Prices = () => {
                             onChange={(e) =>
                               handleChange(item._id, "name", e.target.value)
                             }
-                            className="bg-white"
+                            className="bg-background"
                             placeholder="Nombre de la prenda"
                           />
                         </TableCell>
                         <TableCell>
                           <select
-                            className="w-full border rounded px-2 py-1.5 bg-white text-sm"
+                            className="w-full border border-input rounded-md px-3 py-1.5 bg-background text-foreground text-sm"
                             value={item.type}
                             onChange={(e) =>
                               handleChange(item._id, "type", e.target.value)
@@ -267,7 +256,7 @@ const Prices = () => {
                                   e.target.value
                                 )
                               }
-                              className="bg-white"
+                              className="bg-background"
                               placeholder="Puntos"
                             />
                           )}
@@ -279,7 +268,7 @@ const Prices = () => {
                             onChange={(e) =>
                               handleChange(item._id, "price", e.target.value)
                             }
-                            className="bg-white"
+                            className="bg-background"
                             placeholder="Precio"
                           />
                         </TableCell>
@@ -321,7 +310,7 @@ const Prices = () => {
               {/* Mobile View */}
               <div className="sm:hidden space-y-4">
                 {filteredPrices.map((item) => (
-                  <Card key={item._id} className="bg-white">
+                  <Card key={item._id}>
                     <CardHeader>
                       <Input
                         value={item.name}
@@ -336,7 +325,7 @@ const Prices = () => {
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Tipo</label>
                         <select
-                          className="w-full border rounded px-2 py-1.5 bg-white text-sm"
+                          className="w-full border border-input rounded-md px-3 py-1.5 bg-background text-foreground text-sm"
                           value={item.type}
                           onChange={(e) =>
                             handleChange(item._id, "type", e.target.value)
@@ -359,7 +348,7 @@ const Prices = () => {
                                 e.target.value
                               )
                             }
-                            className="bg-white"
+                            className="bg-background"
                             placeholder="Puntos"
                           />
                         </div>
@@ -374,7 +363,7 @@ const Prices = () => {
                           onChange={(e) =>
                             handleChange(item._id, "price", e.target.value)
                           }
-                          className="bg-white"
+                          className="bg-background"
                           placeholder="Precio"
                         />
                       </div>
@@ -418,12 +407,12 @@ const Prices = () => {
             </>
           )}
           {hasChanges && (
-            <div className="mt-6 flex justify-end gap-2">
-              <Button variant="outline" onClick={handleCancel} disabled={saving}>
+            <div className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2 w-full sm:w-auto">
+              <Button variant="outline" onClick={handleCancel} disabled={saving} className="w-full sm:w-auto">
                 <XCircle className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
-              <Button onClick={handleSaveAll} disabled={saving}>
+              <Button onClick={handleSaveAll} disabled={saving} className="w-full sm:w-auto">
                 {saving ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (

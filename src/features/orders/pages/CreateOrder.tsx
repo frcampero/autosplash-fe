@@ -1,17 +1,17 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import api from "@/lib/api";
 import { toast } from "sonner";
-import { getAuthHeaders } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import OrderDetailsForm from "@/features/orders/components/OrderDetailsForm";
 import CustomerForm from "@/features/orders/components/CustomerForm";
 import PrendasForm from "@/features/orders/components/PrendasForm";
 import PaymentForm from "@/features/orders/components/PaymentForm";
 import { ArrowLeft, Check, ShoppingCart, User, Wallet } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const API = import.meta.env.VITE_API_URL;
+import { cn } from "@/lib/utils";
 
 interface PriceItem {
   _id: string;
@@ -46,6 +46,7 @@ const STEPS = [
 
 const CreateOrder = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepDirection, setStepDirection] = useState<"forward" | "back">("forward");
   const [clientes, setClientes] = useState([]);
   const [priceItems, setPriceItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
@@ -67,11 +68,8 @@ const CreateOrder = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`${API}/api/customers`, {
-        ...getAuthHeaders(),
-        params: { limit: 9999 },
-      })
+    api
+      .get("/api/customers", { params: { limit: 9999 } })
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : res.data.results;
         setClientes(data || []);
@@ -79,8 +77,8 @@ const CreateOrder = () => {
   }, []);
 
   useEffect(() => {
-    axios
-      .get(`${API}/api/prices`, getAuthHeaders())
+    api
+      .get("/api/prices")
       .then((res) => {
         setPriceItems(res.data);
       })
@@ -107,10 +105,12 @@ const CreateOrder = () => {
         return;
       }
     }
+    setStepDirection("forward");
     setCurrentStep((prev) => (prev < STEPS.length ? prev + 1 : prev));
   };
 
   const prevStep = () => {
+    setStepDirection("back");
     setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev));
   };
 
@@ -140,17 +140,13 @@ const CreateOrder = () => {
 
       let customerId = form.clienteExistente;
       if (!customerId) {
-        const res = await axios.post(
-          `${API}/api/customers`,
-          {
-            firstName: form.firstName,
-            lastName: form.lastName,
-            phone: form.phone,
-            email: form.email,
-            address: form.address,
-          },
-          getAuthHeaders()
-        );
+        const res = await api.post("/api/customers", {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          email: form.email,
+          address: form.address,
+        });
         customerId = res.data._id;
       }
 
@@ -169,23 +165,16 @@ const CreateOrder = () => {
         })),
       };
 
-      const orderRes = await axios.post(
-        `${API}/api/orders`,
-        payload,
-        getAuthHeaders()
-      );
+      const orderRes = await api.post("/api/orders", payload);
 
       toast.success("Orden creada correctamente", {
         description: "Ya está visible en el panel de ordenes.",
       });
 
       try {
-        const pdfResponse = await axios.get(
-          `${API}/api/pdf/order/${orderRes.data._id}`,
-          {
-            ...getAuthHeaders(),
-            responseType: "blob",
-          }
+        const pdfResponse = await api.get(
+          `/api/pdf/order/${orderRes.data._id}`,
+          { responseType: "blob" }
         );
         const url = window.URL.createObjectURL(new Blob([pdfResponse.data]));
         const link = document.createElement("a");
@@ -262,18 +251,18 @@ const CreateOrder = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center mb-8">
-        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-full overflow-x-hidden">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <Button variant="outline" size="icon" className="shrink-0" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold ml-4">Crear Nueva Orden</h1>
+        <h1 className="text-xl sm:text-2xl font-bold min-w-0">Crear Nueva Orden</h1>
       </div>
 
-      <div className="relative flex justify-between items-center w-full max-w-md mx-auto mb-8">
-        <div className="absolute left-0 top-1/2 w-full h-0.5 bg-gray-200 -translate-y-1/2"></div>
+      <div className="relative flex justify-between items-center w-full max-w-full sm:max-w-md mx-auto mb-6 sm:mb-8 px-2">
+        <div className="absolute left-0 top-1/2 w-full h-0.5 bg-border -translate-y-1/2"></div>
         <div
-          className="absolute left-0 top-1/2 h-0.5 bg-blue-600 transition-all duration-300 -translate-y-1/2"
+          className="absolute left-0 top-1/2 h-0.5 bg-primary transition-all duration-300 -translate-y-1/2"
           style={{
             width: `calc(${
               ((currentStep - 1) / (STEPS.length - 1)) * 100
@@ -285,8 +274,8 @@ const CreateOrder = () => {
             <div
               className={`flex items-center justify-center w-10 h-10 rounded-full shrink-0 ${
                 step.id <= currentStep
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
               {step.id < currentStep ? (
@@ -310,7 +299,15 @@ const CreateOrder = () => {
         }}
         className="space-y-6"
       >
-        <Card>
+        <Card
+          key={currentStep}
+          className={cn(
+            "animate-in fade-in-0 duration-200",
+            stepDirection === "forward"
+              ? "slide-in-from-right-2"
+              : "slide-in-from-left-2"
+          )}
+        >
           <CardHeader>
             <CardTitle>{STEPS[currentStep - 1].name}</CardTitle>
           </CardHeader>
@@ -318,21 +315,28 @@ const CreateOrder = () => {
         </Card>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
+        <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-6">
           {currentStep > 1 ? (
-            <Button type="button" variant="outline" onClick={prevStep}>
+            <Button type="button" variant="outline" onClick={prevStep} className="w-full sm:w-auto">
               Anterior
             </Button>
           ) : (
-            <div />
+            <div className="hidden sm:block" />
           )}
           {currentStep < STEPS.length ? (
-            <Button type="submit">
+            <Button type="submit" className="w-full sm:w-auto">
               Siguiente
             </Button>
           ) : (
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creando Orden..." : "Finalizar y Crear Orden"}
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  Creando orden…
+                </>
+              ) : (
+                "Finalizar y Crear Orden"
+              )}
             </Button>
           )}
         </div>

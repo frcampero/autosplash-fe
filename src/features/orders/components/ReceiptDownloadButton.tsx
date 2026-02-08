@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import api from "@/lib/api";
 import { toast } from "sonner";
-import { getAuthHeaders } from "@/lib/api";
 
 interface Props {
   orderId: string;
@@ -11,13 +10,9 @@ interface Props {
 const ReceiptDownloadButton = ({ orderId, className }: Props) => {
   const handleDownload = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/pdf/order/${orderId}`,
-        {
-          ...getAuthHeaders(),
-          responseType: "blob",
-        }
-      );
+      const response = await api.get(`/api/pdf/order/${orderId}`, {
+        responseType: "blob",
+      });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");

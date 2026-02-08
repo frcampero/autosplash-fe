@@ -59,11 +59,11 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
-  className={cn(sheetVariants({ side }), className, "focus:ring-0 focus:border-gray-200")}
+  className={cn(sheetVariants({ side }), className, "focus:ring-0 focus:border-border")}
       {...props}
     >
-  <SheetPrimitive.Close className="absolute right-4 top-4 rounded-full bg-white shadow-lg border border-gray-200 opacity-90 hover:opacity-100 transition p-1 z-50 flex items-center justify-center focus:ring-0 focus:border-gray-200">
-        <X className="h-5 w-5 text-gray-700 mx-auto" />
+  <SheetPrimitive.Close className="absolute right-4 top-4 rounded-full bg-background shadow-lg border border-border opacity-90 hover:opacity-100 transition p-1 z-50 flex items-center justify-center focus:ring-0 focus:border-border">
+        <X className="h-5 w-5 text-foreground mx-auto" />
         <span className="sr-only">Cerrar menú</span>
       </SheetPrimitive.Close>
       {children}

@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, AlertTriangle } from "lucide-react";
-
-const API = import.meta.env.VITE_API_URL;
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Order {
   _id: string;
@@ -21,8 +19,8 @@ const DelayedOrdersCard = () => {
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    axios
-      .get(`${API}/api/orders/delayed`, getAuthHeaders())
+    api
+      .get("/api/orders/delayed")
       .then((res) => {
         setOrders(res.data.orders || []);
         setTotalCount(res.data.totalCount || 0);
@@ -31,45 +29,56 @@ const DelayedOrdersCard = () => {
   }, []);
 
   return (
-    <div className="bg-white rounded-md shadow-sm p-4 w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Tickets Atrasados</h2>
-        {totalCount > 0 && (
-          <div className="flex items-center gap-2 text-sm font-semibold text-amber-600">
-            <AlertTriangle className="w-4 h-4" />
-            {totalCount} en total
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle>Tickets atrasados</CardTitle>
+        <div className="flex items-center gap-2">
+          {totalCount > 0 && (
+            <span className="flex items-center gap-1.5 rounded-md bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {totalCount} en total
+            </span>
+          )}
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <AlertTriangle className="h-4 w-4" />
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Se consideran atrasados si no se completan en 3 días. Se muestran los 5 más antiguos.
+        </p>
+        {orders.length === 0 ? (
+          <div className="rounded-lg border border-dashed bg-muted/30 py-8 text-center">
+            <p className="text-sm font-medium text-foreground">Todo al día</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              No hay tickets atrasados.
+            </p>
           </div>
-        )}
-      </div>
-      
-      {orders.length === 0 ? (
-        <p className="text-gray-500 text-center py-4">¡Excelente! No hay tickets atrasados.</p>
-      ) : (
-        <>
-          <p className="text-xs text-gray-500 mb-3">Mostrando los 5 más antiguos. Un ticket se considera atrasado si no se ha completado en 3 días.</p>
-          <ul className="space-y-2">
+        ) : (
+          <ul className="space-y-0 divide-y divide-border">
             {orders.map((o) => (
               <li
                 key={o._id}
                 onClick={() => navigate(`/orders/${o._id}`)}
-                className="flex justify-between items-center border-b py-2 px-2 text-sm text-gray-700 cursor-pointer rounded transition-colors hover:bg-gray-100"
+                className="flex cursor-pointer items-center justify-between gap-4 py-3 transition-colors hover:bg-muted/50 first:pt-0 last:pb-0 -mx-2 px-2 rounded-lg"
               >
-                <div>
-                  <div className="font-medium">{o.nombre}</div>
-                  <div className="text-xs text-gray-500">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground">{o.nombre}</p>
+                  <p className="text-xs text-muted-foreground">
                     Ingresó hace {formatDistanceToNow(new Date(o.fecha), { locale: es })}
-                  </div>
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-right font-medium">{o.estado}</span>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">{o.estado}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </div>
               </li>
             ))}
           </ul>
-        </>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

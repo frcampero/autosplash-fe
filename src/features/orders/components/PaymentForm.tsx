@@ -86,7 +86,7 @@ const PaymentForm = ({
           </Select>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col items-stretch gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-b-lg">
+      <CardFooter className="flex flex-col items-stretch gap-4 bg-muted/50 p-4 rounded-b-lg">
         <div className="text-sm font-semibold text-center">
           Total: ${total.toLocaleString("es-AR")} | Pagado: $
           {pagado.toLocaleString("es-AR")} | Restante: $

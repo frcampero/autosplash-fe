@@ -42,7 +42,7 @@ const OrderItemsSection = ({ items }: OrderItemsSectionProps) => {
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+            <thead className="text-xs text-muted-foreground uppercase bg-muted">
               <tr>
                 <th scope="col" className="px-6 py-3">Prenda</th>
                 <th scope="col" className="px-6 py-3 text-center">Cantidad</th>
@@ -52,8 +52,8 @@ const OrderItemsSection = ({ items }: OrderItemsSectionProps) => {
             </thead>
             <tbody>
               {items.map(({ item, quantity }) => (
-                <tr key={item._id} className="bg-white border-b">
-                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{item.name}</td>
+                <tr key={item._id} className="bg-card border-b border-border">
+                  <td className="px-6 py-4 font-medium text-foreground whitespace-nowrap">{item.name}</td>
                   <td className="px-6 py-4 text-center">{quantity}</td>
                   <td className="px-6 py-4 text-right">{formatCurrency(item.price)}</td>
                   <td className="px-6 py-4 text-right font-semibold">{formatCurrency(item.price * quantity)}</td>

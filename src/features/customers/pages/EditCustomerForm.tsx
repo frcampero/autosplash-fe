@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,8 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
-const API = import.meta.env.VITE_API_URL;
 
 const EditCustomerForm = () => {
   const { id } = useParams();
@@ -30,10 +27,7 @@ const EditCustomerForm = () => {
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const res = await axios.get(
-          `${API}/api/customers/${id}`,
-          getAuthHeaders()
-        );
+        const res = await api.get(`/api/customers/${id}`);
         const c = res.data;
         setFirstName(c.firstName);
         setLastName(c.lastName);
@@ -54,11 +48,12 @@ const EditCustomerForm = () => {
     e.preventDefault();
 
     try {
-      await axios.put(
-        `${API}/api/customers/${id}`,
-        { firstName, lastName, phone, address },
-        getAuthHeaders()
-      );
+      await api.put(`/api/customers/${id}`, {
+        firstName,
+        lastName,
+        phone,
+        address,
+      });
       toast.success("Cliente actualizado correctamente");
       navigate(`/customers/${id}`);
     } catch (err) {
@@ -96,7 +91,7 @@ const EditCustomerForm = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="bg-white"
+                  className="bg-background"
                 />
               </div>
               <div className="space-y-2">
@@ -107,7 +102,7 @@ const EditCustomerForm = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  className="bg-white"
+                  className="bg-background"
                 />
               </div>
             </div>
@@ -118,7 +113,7 @@ const EditCustomerForm = () => {
                 placeholder="Ej: 1122334455"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="bg-white"
+                className="bg-background"
               />
             </div>
             <div className="space-y-2">
@@ -128,7 +123,7 @@ const EditCustomerForm = () => {
                 placeholder="Ej: Av. Siempre Viva 742"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="bg-white"
+                className="bg-background"
               />
             </div>
           </CardContent>

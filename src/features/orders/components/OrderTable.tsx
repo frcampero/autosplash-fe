@@ -1,6 +1,6 @@
-import axios from "axios";
+import type { AxiosError } from "axios";
+import api from "@/lib/api";
 import { toast } from "sonner";
-import { getAuthHeaders } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Order } from "@/types/order";
@@ -12,9 +12,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import DeleteOrderDialog from "./DeleteOrderDialog";
+import { TableSkeleton } from "@/components/TableSkeleton";
 
 interface Props {
   orders: Order[];
@@ -40,78 +42,91 @@ const getPaymentClass = (status: string) => {
     case "Pendiente":
       return "bg-red-100 text-red-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-muted text-muted-foreground";
   }
 };
 
 const getStatusBadgeClass = (status: string) => {
   switch (status) {
     case "Recibido":
-      return "bg-blue-100 text-blue-800";
+      return "bg-primary/15 text-primary";
     case "En progreso":
       return "bg-yellow-100 text-yellow-800";
     case "Completado":
       return "bg-green-100 text-green-800";
     case "Entregado":
-      return "bg-gray-200 text-gray-800";
+      return "bg-muted text-foreground";
     default:
-      return "bg-slate-100 text-slate-800";
+      return "bg-muted text-muted-foreground";
   }
 };
 
 const OrderTable = ({ orders, loading, refreshOrders }: Props) => {
-  if (loading) return <div className="p-4">Cargando ordenes...</div>;
+  if (loading) return <TableSkeleton rows={8} columns={6} />;
 
   if (!orders.length) {
-    return <div className="p-4 text-gray-500">No hay ordenes aún. </div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4 bg-card rounded-lg border border-border text-center animate-in fade-in-0 duration-300">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <FileText className="h-10 w-10 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">
+          No hay órdenes aún
+        </h3>
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+          Creá tu primera orden para empezar a cargar tickets y llevar el control de los pedidos.
+        </p>
+        <Button asChild>
+          <Link to="/orders/nuevo">+ Nueva orden</Link>
+        </Button>
+      </div>
+    );
   }
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/orders/${id}`,
-        getAuthHeaders()
-      );
+      await api.delete(`/api/orders/${id}`);
       toast.success("Orden eliminada correctamente");
       refreshOrders();
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as AxiosError<{ error?: string }>;
       const mensaje =
-        error.response?.data?.error || "Error al eliminar la orden";
+        err.response?.data?.error || "Error al eliminar la orden";
       console.error("❌ Error al eliminar la orden:", mensaje);
       toast.error(mensaje);
     }
   };
 
   return (
-    <div className="bg-white rounded-md shadow-sm">
+    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       {/* --- Vista de Tabla (Desktop) --- */}
       <div className="overflow-x-auto hidden md:block">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b">
-              <th className="text-left py-2 px-4 font-semibold text-gray-700">
+              <th className="text-left py-2 px-4 font-semibold text-foreground">
                 Orden #
               </th>
-              <th className="text-left py-2 px-4 font-semibold text-gray-700">
+              <th className="text-left py-2 px-4 font-semibold text-foreground">
                 Cliente
               </th>
-              <th className="text-left py-2 px-4 font-semibold text-gray-700">
+              <th className="text-left py-2 px-4 font-semibold text-foreground">
                 Fecha
               </th>
-              <th className="text-left py-2 px-4 font-semibold text-gray-700">
+              <th className="text-left py-2 px-4 font-semibold text-foreground">
                 Estado de Orden
               </th>
-              <th className="text-left py-2 px-4 font-semibold text-gray-700">
+              <th className="text-left py-2 px-4 font-semibold text-foreground">
                 Estado de pago
               </th>
-              <th className="text-left py-2 px-4 font-semibold text-gray-700">
+              <th className="text-left py-2 px-4 font-semibold text-foreground">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order._id} className="border-b hover:bg-gray-50">
+              <tr key={order._id} className="border-b hover:bg-muted/50 transition-colors">
                 <td className="py-2 px-4">{order.orderId}</td>
                 <td className="py-2 px-4">
                   {order.customerId
@@ -145,10 +160,7 @@ const OrderTable = ({ orders, loading, refreshOrders }: Props) => {
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="bg-white text-gray-900 border-gray-200 shadow-md"
-                    >
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         onSelect={() =>
                           (window.location.href = `/orders/${order._id}`)
@@ -186,13 +198,13 @@ const OrderTable = ({ orders, loading, refreshOrders }: Props) => {
         {orders.map((order) => (
           <div
             key={order._id}
-            className="border-b p-4 space-y-3 bg-white"
+            className="border-b p-4 space-y-3 bg-card"
             onClick={() => (window.location.href = `/orders/${order._id}`)}
           >
             <div className="flex justify-between items-start">
               <div>
                 <p className="font-semibold text-base">Orden #{order.orderId}</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {order.customerId
                     ? `${order.customerId.firstName} ${order.customerId.lastName}`
                     : "Cliente desconocido"}
@@ -209,11 +221,7 @@ const OrderTable = ({ orders, loading, refreshOrders }: Props) => {
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="bg-white text-gray-900 border-gray-200 shadow-md"
-                  onClick={(e) => e.stopPropagation()} // Evita que el click se propague al div contenedor
-                >
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenuItem
                     onSelect={() =>
                       (window.location.href = `/orders/${order._id}`)
@@ -239,11 +247,11 @@ const OrderTable = ({ orders, loading, refreshOrders }: Props) => {
 
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <p className="text-gray-500">Fecha</p>
+                <p className="text-muted-foreground">Fecha</p>
                 <p>{new Date(order.createdAt).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-gray-500">Total</p>
+                <p className="text-muted-foreground">Total</p>
                 <p className="font-medium">${order.total?.toFixed(2) ?? "0.00"}</p>
               </div>
             </div>

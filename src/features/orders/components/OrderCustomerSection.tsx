@@ -33,7 +33,7 @@ const OrderCustomerSection = ({ order }: Props) => {
           <CardTitle>Datos del Cliente</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             No hay un cliente asociado a esta orden.
           </p>
         </CardContent>
@@ -48,21 +48,21 @@ const OrderCustomerSection = ({ order }: Props) => {
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
         <div className="flex items-center">
-          <User className="h-4 w-4 mr-3 text-gray-500" />
+          <User className="h-4 w-4 mr-3 text-muted-foreground" />
           <span>
             {customer.firstName} {customer.lastName}
           </span>
         </div>
         <div className="flex items-center">
-          <Phone className="h-4 w-4 mr-3 text-gray-500" />
+          <Phone className="h-4 w-4 mr-3 text-muted-foreground" />
           <span>{customer.phone || "No especificado"}</span>
         </div>
         <div className="flex items-center">
-          <Mail className="h-4 w-4 mr-3 text-gray-500" />
+          <Mail className="h-4 w-4 mr-3 text-muted-foreground" />
           <span>{customer.email || "No especificado"}</span>
         </div>
         <div className="flex items-center">
-          <Home className="h-4 w-4 mr-3 text-gray-500" />
+          <Home className="h-4 w-4 mr-3 text-muted-foreground" />
           <span>{customer.address || "No especificado"}</span>
         </div>
       </CardContent>

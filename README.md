@@ -52,32 +52,89 @@ You can test the app using the following credentials:
 
 ---
 
-## ⚙️ Installation
+## 🚀 Probar en local
 
-### Clone the repositories
-```bash
-# Frontend
-git clone https://github.com/frcampero/autosplash-fe.git
+Para probar el frontend (y la app completa) en tu máquina:
 
-# Backend
-git clone https://github.com/frcampero/autosplash-be.git
-```
+### 1. Backend (obligatorio para login y datos)
 
-### Backend setup
+El frontend llama a una API. Necesitás tener el backend corriendo:
+
 ```bash
 cd autosplash-be
 npm install
 cp .env.example .env
-# Configure your environment variables (MongoDB, JWT, etc.)
+# Completar .env (MongoDB, JWT, etc.)
 npm run dev
 ```
 
-### Frontend setup
+Dejá esta terminal abierta. Anotá en qué URL corre (ej: `http://localhost:3001`).
+
+### 2. Frontend
+
+En **otra terminal**:
+
 ```bash
-cd autosplash-frontend
+cd autosplash-fe
 npm install
 cp .env.example .env
-# Set VITE_API_URL to your backend URL
+```
+
+Abrí el archivo `.env` y configurá la URL del backend:
+
+```env
+VITE_API_URL=http://localhost:3001
+```
+
+(Reemplazá el puerto si tu backend usa otro, por ejemplo `http://localhost:4000`.)
+
+Luego:
+
+```bash
+npm run dev
+```
+
+Vite va a levantar el frontend (por defecto en **http://localhost:5173**). Abrí esa URL en el navegador.
+
+### 3. Iniciar sesión
+
+Usá la cuenta de prueba:
+
+- **Email:** editor.autosplash@gmail.com  
+- **Password:** admin123  
+
+---
+
+## ⚙️ Installation (desarrollo desde cero)
+
+### Clonar los repos
+
+```bash
+# Frontend
+git clone https://github.com/frcampero/autosplash-fe.git
+cd autosplash-fe
+
+# Backend (en otra carpeta)
+git clone https://github.com/frcampero/autosplash-be.git
+```
+
+### Backend
+
+```bash
+cd autosplash-be
+npm install
+cp .env.example .env
+# Configurar variables (MongoDB, JWT, etc.)
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd autosplash-fe
+npm install
+cp .env.example .env
+# En .env: VITE_API_URL=http://localhost:3001 (o el puerto de tu backend)
 npm run dev
 ```
 

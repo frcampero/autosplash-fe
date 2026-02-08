@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type PublicOrderType = {
@@ -23,8 +23,6 @@ type PublicOrderType = {
   }[];
 };
 
-const API = import.meta.env.VITE_API_URL;
-
 const PublicOrderPage = () => {
   const { orderId } = useParams();
   const [data, setData] = useState<PublicOrderType | null>(null);
@@ -34,7 +32,7 @@ const PublicOrderPage = () => {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await axios.get(`${API}/api/public/orders/${orderId}`);
+        const res = await api.get(`/api/public/orders/${orderId}`);
         setData(res.data);
       } catch (err) {
         setError("No se pudo cargar la orden");
@@ -47,7 +45,7 @@ const PublicOrderPage = () => {
   }, [orderId]);
 
 
-  if (loading) return <div className="p-6 text-center text-gray-500">Cargando pedido...</div>;
+  if (loading) return <div className="p-6 text-center text-muted-foreground">Cargando pedido...</div>;
   if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
   if (!data) return <div className="p-6 text-center text-red-500">Pedido no encontrado</div>;
 
@@ -62,27 +60,27 @@ const PublicOrderPage = () => {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <span className="block text-xs text-gray-500 mb-1">Cliente</span>
+              <span className="block text-xs text-muted-foreground mb-1">Cliente</span>
               <span className="font-medium">{customer.firstName} {customer.lastName}</span>
             </div>
             <div>
-              <span className="block text-xs text-gray-500 mb-1">Fecha</span>
+              <span className="block text-xs text-muted-foreground mb-1">Fecha</span>
               <span className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</span>
             </div>
             <div>
-              <span className="block text-xs text-gray-500 mb-1">Estado</span>
+              <span className="block text-xs text-muted-foreground mb-1">Estado</span>
               <span className="font-medium">{order.status}</span>
             </div>
             <div>
-              <span className="block text-xs text-gray-500 mb-1">Prioridad</span>
+              <span className="block text-xs text-muted-foreground mb-1">Prioridad</span>
               <span className="font-medium">{order.priority}</span>
             </div>
             <div className="md:col-span-2">
-              <span className="block text-xs text-gray-500 mb-1">Descripción</span>
-              <span className="text-sm p-3 bg-gray-50 rounded-md border">{order.description}</span>
+              <span className="block text-xs text-muted-foreground mb-1">Descripción</span>
+              <span className="text-sm p-3 bg-muted rounded-md border border-border">{order.description}</span>
             </div>
             <div>
-              <span className="block text-xs text-gray-500 mb-1">Total</span>
+              <span className="block text-xs text-muted-foreground mb-1">Total</span>
               <span className="font-medium">${order.total}</span>
             </div>
           </div>
@@ -92,12 +90,12 @@ const PublicOrderPage = () => {
             {payments.length === 0 ? (
               <span className="text-sm text-muted-foreground">No hay pagos registrados</span>
             ) : (
-              <ul className="mt-2 space-y-2 text-sm text-gray-700 border rounded-md p-3">
+              <ul className="mt-2 space-y-2 text-sm text-foreground border border-border rounded-md p-3">
                 {payments.map((p, i) => (
-                  <li key={i} className="flex justify-between items-center pb-1">
+                  <li key={i} className="flex flex-wrap justify-between items-center gap-x-2 pb-2 last:pb-0 border-b border-border last:border-0 py-2 first:pt-0">
                     <span className="font-semibold">${p.amount}</span>
-                    <span className="text-gray-500 text-xs">{new Date(p.createdAt).toLocaleDateString()}</span>
-                    <span className="ml-2">{p.method}</span>
+                    <span className="text-muted-foreground text-xs order-last w-full sm:w-auto sm:order-none">{new Date(p.createdAt).toLocaleDateString()}</span>
+                    <span className="text-sm">{p.method}</span>
                   </li>
                 ))}
               </ul>

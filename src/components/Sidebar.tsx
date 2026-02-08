@@ -1,15 +1,17 @@
+import { useEffect, useState } from "react";
 import {
   Home,
   FileText,
   LogOut,
   Tag,
   Users,
-  ChevronLeft
+  UserCog,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
-import { logout } from "@/lib/api";
+import api from "@/lib/api";
+import { logout, clearStoredToken } from "@/lib/api";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -17,7 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-
 import React from "react";
 import { SheetClose } from "@/components/ui/sheet";
 
@@ -29,60 +30,97 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-interface NavLinkProps {
+const links = [
+  { to: "/", icon: Home, label: "Inicio", exact: true },
+  { to: "/orders", icon: FileText, label: "Órdenes", exact: false },
+  { to: "/customers", icon: Users, label: "Clientes", exact: false },
+  { to: "/prices", icon: Tag, label: "Precios", exact: true },
+];
+
+interface NavLinkItemProps {
   to: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   isCollapsed: boolean;
-  pathname: string;
+  isActive: boolean;
+  isMobile?: boolean;
+  onNavigate?: () => void;
 }
 
-const NavLink = ({ to, icon, label, isCollapsed, pathname }: NavLinkProps) => {
-  const isActive = pathname === to;
-  return (
+function isLinkActive(pathname: string, to: string, exact: boolean): boolean {
+  if (exact) return pathname === to;
+  return pathname === to || pathname.startsWith(to + "/");
+}
+
+const NavLinkItem = ({
+  to,
+  icon: Icon,
+  label,
+  isCollapsed,
+  isActive,
+  isMobile,
+  onNavigate,
+}: NavLinkItemProps) => {
+  const content = (
+    <Link
+      to={to}
+      onClick={onNavigate}
+      className={cn(
+        "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "border-l-[3px] border-transparent",
+        isActive
+          ? "bg-primary/10 text-primary border-l-primary"
+          : "text-muted-foreground hover:bg-muted/80 hover:text-foreground border-l-transparent"
+      )}
+    >
+      <Icon className="h-5 w-5 shrink-0 flex-shrink-0" />
+      <span
+        className={cn(
+          "truncate overflow-hidden transition-all duration-200 ease-out",
+          isCollapsed ? "max-w-0 opacity-0 min-w-0" : "max-w-[8rem] opacity-100"
+        )}
+      >
+        {label}
+      </span>
+    </Link>
+  );
+
+  const wrapped = isMobile ? (
+    <SheetClose asChild>{content}</SheetClose>
+  ) : (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            to={to}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted",
-              isActive && "bg-muted text-primary",
-              isCollapsed && "h-10 w-10 justify-center px-0"
-            )}
-          >
-            {icon}
-            <span className={cn("truncate", isCollapsed && "sr-only")}>
-              {label}
-            </span>
-          </Link>
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
         {isCollapsed && (
-          <TooltipContent side="right">
-            <p>{label}</p>
+          <TooltipContent side="right" className="font-medium">
+            {label}
           </TooltipContent>
         )}
       </Tooltip>
     </TooltipProvider>
   );
+
+  return wrapped;
 };
 
-const Sidebar = ({ isCollapsed, setIsCollapsed, onNavigate, showCollapseButton, isMobile }: SidebarProps) => {
+const Sidebar = ({
+  isCollapsed,
+  setIsCollapsed,
+  onNavigate,
+  isMobile,
+}: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isMobileOpen, setIsMobileOpen] = React.useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const links = [
-    { to: "/", icon: <Home className="h-6 w-6" />, label: "Inicio" },
-    { to: "/orders", icon: <FileText className="h-6 w-6" />, label: "Órdenes" },
-    { to: "/customers", icon: <Users className="h-6 w-6" />, label: "Clientes" },
-    { to: "/prices", icon: <Tag className="h-6 w-6" />, label: "Precios" },
-  ];
+  useEffect(() => {
+    api.get("/api/auth/me").then((r) => setIsAdmin(r.data?.role === "admin")).catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     try {
       await logout();
-      localStorage.removeItem("token");
+      clearStoredToken();
       toast.success("Sesión cerrada correctamente");
       navigate("/login");
     } catch (err) {
@@ -94,123 +132,103 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, onNavigate, showCollapseButton, 
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-screen max-h-screen flex-col border-r bg-white shadow-2xl transition-all duration-300 ease-in-out",
-        isMobile ? "w-72" : (isCollapsed ? "w-20" : "w-56")
+        "sticky top-0 flex h-screen max-h-screen flex-col border-r border-border bg-card overflow-x-hidden",
+        "transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        isMobile ? "w-72" : isCollapsed ? "w-[4.5rem]" : "w-52"
       )}
     >
+      {/* Header con logo */}
       <div
         className={cn(
-          "flex items-center justify-center transition-all duration-300",
-          isCollapsed ? "px-2" : "px-6"
+          "flex items-center justify-center shrink-0 min-h-[4.5rem] border-b border-border/80 bg-muted/30 overflow-hidden",
+          "transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          isCollapsed ? "h-16 px-2" : "px-4 py-4"
         )}
-        style={{ minHeight: '60px', position: 'relative' }}
       >
         {!isCollapsed ? (
-          <img src="/imagotipo-claro.png" alt="Autosplash" className="h-7 w-auto mx-auto transition-all duration-300" />
+          <Link to="/" className="block outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg">
+            <img
+              src="/imagotipo-claro.png"
+              alt="Autosplash"
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
         ) : (
-          <img src="/isotipo-claro.png" alt="Isotipo Autosplash" className="h-8 w-auto mx-auto transition-all duration-300" />
+          <Link to="/" className="block outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-primary rounded-full">
+            <img
+              src="/isotipo-claro.png"
+              alt="Autosplash"
+              className="h-9 w-9 object-contain mx-auto"
+            />
+          </Link>
         )}
-        <div className="absolute left-0 bottom-0 w-full border-b border-gray-200 pointer-events-none" />
       </div>
 
-      {!isMobile && (
-        <div className="absolute -right-4 top-8 z-20">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shadow-lg bg-white border border-gray-200 rounded-full hover:bg-gray-100 transition"
-            style={{ outline: 'none', boxShadow: 'none' }}
-            onClick={() => setIsCollapsed(!isCollapsed)}
+      {/* Navegación */}
+      <nav
+        className={cn(
+          "flex-1 overflow-y-auto py-4 transition-all duration-300",
+          isCollapsed ? "px-2 space-y-0.5" : "px-3 space-y-0.5"
+        )}
+      >
+        {!isMobile && (
+          <p
+            className={cn(
+              "px-3 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider overflow-hidden transition-all duration-200 ease-out",
+              isCollapsed ? "max-h-0 mb-0 py-0 opacity-0" : "max-h-5 opacity-100"
+            )}
           >
-            <ChevronLeft className={isCollapsed ? 'rotate-180 h-5 w-5' : 'h-5 w-5'} />
-          </Button>
-        </div>
-      )}
-
-      <nav className={cn("flex-1 space-y-2 transition-all duration-300", isCollapsed ? "px-1 py-2" : "px-4 py-6")}> 
+            Navegación
+          </p>
+        )}
         {links.map((link) => (
-          isMobile ? (
-            <SheetClose asChild key={link.to}>
-              <Button
-                variant={location.pathname === link.to ? "secondary" : "outline"}
-                className={cn(
-                  "w-full flex items-center gap-4 rounded-lg px-4 py-3 text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-0",
-                  location.pathname === link.to
-                    ? "bg-blue-100 text-blue-700 shadow-md"
-                    : "text-gray-700 hover:bg-gray-50 hover:scale-[1.03] hover:shadow-sm",
-                  isCollapsed && "justify-center px-0 py-2"
-                )}
-                onClick={() => {
-                  navigate(link.to);
-                  if (typeof onNavigate === "function") onNavigate();
-                }}
-                tabIndex={0}
-              >
-                <span
-                  className={cn(
-                    "",
-                    location.pathname === link.to
-                      ? "text-blue-600"
-                      : "text-gray-400"
-                  )}
-                >
-                  {link.icon}
-                </span>
-                <span className={cn("truncate", isCollapsed && "sr-only")}> 
-                  {link.label}
-                </span>
-              </Button>
-            </SheetClose>
-          ) : (
-            <Button
-              key={link.to}
-              variant={location.pathname === link.to ? "secondary" : "outline"}
-              className={cn(
-                "w-full flex items-center gap-4 rounded-lg px-4 py-3 text-lg font-medium transition-all duration-200 focus:outline-none focus:ring-0",
-                location.pathname === link.to
-                  ? "bg-blue-100 text-blue-700 shadow-md"
-                  : "text-gray-700 hover:bg-gray-50 hover:scale-[1.03] hover:shadow-sm",
-                isCollapsed && "justify-center px-0 py-2"
-              )}
-              onClick={() => {
-                navigate(link.to);
-                if (typeof onNavigate === "function") onNavigate();
-              }}
-              tabIndex={0}
-            >
-              <span
-                className={cn(
-                  "",
-                  location.pathname === link.to
-                    ? "text-blue-600"
-                    : "text-gray-400"
-                )}
-              >
-                {link.icon}
-              </span>
-              <span className={cn("truncate", isCollapsed && "sr-only")}> 
-                {link.label}
-              </span>
-            </Button>
-          )
+          <NavLinkItem
+            key={link.to}
+            to={link.to}
+            icon={link.icon}
+            label={link.label}
+            isCollapsed={isCollapsed}
+            isActive={isLinkActive(location.pathname, link.to, link.exact ?? false)}
+            isMobile={isMobile}
+            onNavigate={onNavigate}
+          />
         ))}
+        {isAdmin && (
+          <NavLinkItem
+            to="/users"
+            icon={UserCog}
+            label="Usuarios"
+            isCollapsed={isCollapsed}
+            isActive={location.pathname === "/users" || location.pathname.startsWith("/users/")}
+            isMobile={isMobile}
+            onNavigate={onNavigate}
+          />
+        )}
       </nav>
 
-      <div className="px-4">
-        <hr className="my-4 border-gray-200" />
-      </div>
-
-      <div className="px-4 pb-6">
+      {/* Cerrar sesión */}
+      <div
+        className={cn(
+          "shrink-0 border-t border-border/80 bg-muted/20 py-3 transition-all duration-300",
+          isCollapsed ? "px-2" : "px-3"
+        )}
+      >
         <Button
           onClick={handleLogout}
-          variant="destructive"
+          variant="ghost"
+          size="sm"
           className={cn(
-            "w-full flex items-center gap-4 rounded-lg transition-all duration-200 bg-red-100 text-red-700 hover:bg-red-200 text-lg font-medium",
-            isCollapsed ? "justify-center px-0 py-2" : "px-4 py-3"
+            "w-full justify-center gap-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors font-medium",
+            isCollapsed ? "px-0 py-2.5" : "px-3 py-2.5"
           )}
         >
-          <LogOut className="h-6 w-6" />
-          <span className={cn("truncate", isCollapsed && "sr-only")}> 
+          <LogOut className="h-4 w-4 shrink-0 flex-shrink-0" />
+          <span
+            className={cn(
+              "truncate overflow-hidden transition-all duration-200 ease-out",
+              isCollapsed ? "max-w-0 opacity-0 min-w-0" : "max-w-[8rem] opacity-100"
+            )}
+          >
             Cerrar sesión
           </span>
         </Button>

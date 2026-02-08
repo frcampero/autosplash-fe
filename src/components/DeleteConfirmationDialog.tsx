@@ -34,7 +34,7 @@ const DeleteConfirmationDialog = ({ onConfirm, children, itemName, itemType = 'e
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
         </AlertDialogHeader>
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
         <AlertDialogFooter>
           <AlertDialogCancel
             onClick={() => setOpen(false)}

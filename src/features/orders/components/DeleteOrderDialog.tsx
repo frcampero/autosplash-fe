@@ -25,7 +25,7 @@ const DeleteOrderDialog = ({ onDelete, children }: Props) => {
         <AlertDialogHeader>
           <AlertDialogTitle>¿Eliminar esta orden?</AlertDialogTitle>
         </AlertDialogHeader>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Esta acción no se puede deshacer.
         </p>
         <AlertDialogFooter>

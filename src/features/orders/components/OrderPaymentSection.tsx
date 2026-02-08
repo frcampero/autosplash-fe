@@ -43,7 +43,7 @@ const getPaymentStatusBadgeClass = (status: string) => {
     case "Pendiente":
       return "bg-red-100 text-red-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-muted text-muted-foreground";
   }
 };
 
@@ -79,11 +79,11 @@ const OrderPaymentSection = ({
         {/* --- Resumen Financiero --- */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Total de la Orden:</span>
+            <span className="text-muted-foreground">Total de la Orden:</span>
             <span className="font-bold text-lg">${order.total.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Total Abonado:</span>
+            <span className="text-muted-foreground">Total Abonado:</span>
             <span className="font-semibold text-green-600">
               ${totalAbonado.toFixed(2)}
             </span>
@@ -95,7 +95,7 @@ const OrderPaymentSection = ({
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Estado del Pago:</span>
+            <span className="text-muted-foreground">Estado del Pago:</span>
             <Badge className={getPaymentStatusBadgeClass(estadoPago)}>
               {estadoPago}
             </Badge>
@@ -106,7 +106,7 @@ const OrderPaymentSection = ({
         {payments.length > 0 && (
           <div>
             <Label className="text-sm font-medium">Historial de Pagos</Label>
-            <ul className="mt-2 space-y-2 text-sm text-gray-700 border rounded-md p-3">
+            <ul className="mt-2 space-y-2 text-sm text-foreground border border-border rounded-md p-3">
               {payments.map((p) => (
                 <li
                   key={p._id}
@@ -114,7 +114,7 @@ const OrderPaymentSection = ({
                 >
                   <div className="flex flex-col">
                     <span className="font-semibold">${p.amount.toFixed(2)}</span>
-                    <span className="text-gray-500 text-xs">
+                    <span className="text-muted-foreground text-xs">
                       {new Date(p.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -139,12 +139,12 @@ const OrderPaymentSection = ({
               placeholder="Monto"
               value={newAmount}
               onChange={(e) => setNewAmount(e.target.value)}
-              className="bg-white"
+              className="bg-background"
             />
             <select
               value={newMethod}
               onChange={(e) => setNewMethod(e.target.value)}
-              className="border rounded-md px-3 py-2 bg-white cursor-pointer w-full"
+              className="border border-input rounded-md px-3 py-2 bg-background text-foreground cursor-pointer w-full"
             >
               <option value="Efectivo">Efectivo</option>
               <option value="Tarjeta de Credito">Tarjeta de Crédito</option>

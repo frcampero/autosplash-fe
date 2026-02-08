@@ -1,14 +1,9 @@
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 
 export const downloadReceipt = async (orderId: string) => {
-  const response = await axios.get(
-    `${import.meta.env.VITE_API_URL}/api/pdf/order/${orderId}`,
-    {
-      ...getAuthHeaders(),
-      responseType: "blob",
-    }
-  );
+  const response = await api.get(`/api/pdf/order/${orderId}`, {
+    responseType: "blob",
+  });
 
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement("a");

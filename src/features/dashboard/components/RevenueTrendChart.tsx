@@ -9,9 +9,11 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+
+const CHART_PRIMARY = "hsl(207, 24%, 53%)";
 
 interface TrendData {
   date: string;
@@ -50,45 +52,59 @@ const RevenueTrendChart = () => {
 
   if (loading) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Ingresos de la Última Semana</CardTitle>
-            </CardHeader>
-            <CardContent style={{ height: '300px' }} className="flex items-center justify-center">
-                <p>Cargando datos...</p>
-            </CardContent>
-        </Card>
-    )
+      <Card>
+        <CardHeader>
+          <CardTitle>Tendencia de ingresos</CardTitle>
+          <CardDescription>Últimos 7 días</CardDescription>
+        </CardHeader>
+        <CardContent style={{ height: "300px" }} className="flex items-center justify-center">
+          <p className="text-sm text-muted-foreground">Cargando datos…</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ingresos de la Última Semana</CardTitle>
+        <CardTitle>Tendencia de ingresos</CardTitle>
+        <CardDescription>Últimos 7 días</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300} debounce={300}>
           <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis 
-              dataKey="formattedDate" 
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="formattedDate"
               tickLine={false}
               axisLine={false}
               fontSize={12}
-              />
-            <YAxis 
+              tick={{ fill: "hsl(var(--muted-foreground))" }}
+            />
+            <YAxis
               tickFormatter={(value) => `$${Number(value) / 1000}k`}
               tickLine={false}
               axisLine={false}
               fontSize={12}
+              tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
-            <Tooltip 
-              cursor={{ fill: 'transparent' }}
-              contentStyle={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }}
-              labelStyle={{ fontWeight: 'bold' }}
+            <Tooltip
+              cursor={{ fill: "hsl(var(--muted) / 0.5)" }}
+              contentStyle={{
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "var(--radius)",
+                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+              }}
+              labelStyle={{ fontWeight: 600, color: "hsl(var(--foreground))" }}
               formatter={(value: number) => [formatCurrency(value), "Ingresos"]}
             />
-            <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} animationDuration={500} />
+            <Bar
+              dataKey="revenue"
+              fill={CHART_PRIMARY}
+              radius={[4, 4, 0, 0]}
+              animationDuration={500}
+            />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

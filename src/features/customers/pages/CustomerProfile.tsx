@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,8 +20,6 @@ import {
   Phone,
   Home,
 } from "lucide-react";
-
-const API = import.meta.env.VITE_API_URL;
 
 interface Customer {
   _id: string;
@@ -50,15 +47,15 @@ interface Stats {
 const getStatusBadgeClass = (status: string) => {
   switch (status) {
     case "Recibido":
-      return "bg-blue-100 text-blue-800";
+      return "bg-primary/15 text-primary";
     case "En progreso":
       return "bg-yellow-100 text-yellow-800";
     case "Completado":
       return "bg-green-100 text-green-800";
     case "Entregado":
-      return "bg-gray-200 text-gray-800";
+      return "bg-muted text-foreground";
     default:
-      return "bg-slate-100 text-slate-800";
+      return "bg-muted text-muted-foreground";
   }
 };
 
@@ -76,9 +73,9 @@ const CustomerProfile = () => {
       setLoading(true);
       try {
         const [customerRes, ordersRes, statsRes] = await Promise.all([
-          axios.get(`${API}/api/customers/${id}`, getAuthHeaders()),
-          axios.get(`${API}/api/orders/customer/${id}`, getAuthHeaders()),
-          axios.get(`${API}/api/customers/${id}/stats`, getAuthHeaders()),
+          api.get(`/api/customers/${id}`),
+          api.get(`/api/orders/customer/${id}`),
+          api.get(`/api/customers/${id}/stats`),
         ]);
 
         setCustomer(customerRes.data);
@@ -87,8 +84,8 @@ const CustomerProfile = () => {
           : ordersRes.data.results;
         setOrders(data || []);
         setStats(statsRes.data);
-      } catch (err: any) {
-        console.error("Error cargando datos:", err.response?.data || err);
+      } catch (err) {
+        console.error("Error cargando datos:", err);
       } finally {
         setLoading(false);
       }
@@ -99,7 +96,7 @@ const CustomerProfile = () => {
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-gray-500">
+      <div className="p-6 text-center text-muted-foreground">
         Cargando perfil del cliente...
       </div>
     );
@@ -114,7 +111,7 @@ const CustomerProfile = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 space-y-6 min-h-screen">
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
@@ -128,7 +125,7 @@ const CustomerProfile = () => {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">
             {customer.firstName} {customer.lastName}
           </h1>
-          <p className="text-sm text-gray-500">Perfil del Cliente</p>
+          <p className="text-sm text-muted-foreground">Perfil del Cliente</p>
         </div>
       </div>
 
@@ -180,15 +177,15 @@ const CustomerProfile = () => {
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div className="flex items-center">
-                <Phone className="h-4 w-4 mr-3 text-gray-500 shrink-0" />
+                <Phone className="h-4 w-4 mr-3 text-muted-foreground shrink-0" />
                 <span>{customer.phone || "No especificado"}</span>
               </div>
               <div className="flex items-center">
-                <Mail className="h-4 w-4 mr-3 text-gray-500 shrink-0" />
+                <Mail className="h-4 w-4 mr-3 text-muted-foreground shrink-0" />
                 <span>{customer.email || "No especificado"}</span>
               </div>
               <div className="flex items-center">
-                <Home className="h-4 w-4 mr-3 text-gray-500 shrink-0" />
+                <Home className="h-4 w-4 mr-3 text-muted-foreground shrink-0" />
                 <span>{customer.address || "No especificado"}</span>
               </div>
             </CardContent>
@@ -216,15 +213,15 @@ const CustomerProfile = () => {
                   orders.map((order) => (
                     <Card
                       key={order._id}
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-muted/50"
                       onClick={() => navigate(`/orders/${order._id}`)}
                     >
                       <CardContent className="p-4 flex justify-between items-start">
                         <div className="flex-grow">
-                          <p className="font-semibold text-blue-600">
+                          <p className="font-semibold text-primary">
                             Orden #{order.orderId}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
                           <p className="text-lg font-bold mt-2">
@@ -247,7 +244,7 @@ const CustomerProfile = () => {
                     </Card>
                   ))
                 ) : (
-                  <p className="py-4 text-center text-gray-500">
+                  <p className="py-4 text-center text-muted-foreground">
                     No hay pedidos registrados para este cliente.
                   </p>
                 )}
@@ -258,19 +255,19 @@ const CustomerProfile = () => {
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-2 px-3 text-left font-semibold text-gray-700">
+                      <th className="py-2 px-3 text-left font-semibold text-foreground">
                         Orden #
                       </th>
-                      <th className="py-2 px-3 text-left font-semibold text-gray-700">
+                      <th className="py-2 px-3 text-left font-semibold text-foreground">
                         Fecha
                       </th>
-                      <th className="py-2 px-3 text-left font-semibold text-gray-700">
+                      <th className="py-2 px-3 text-left font-semibold text-foreground">
                         Estado
                       </th>
-                      <th className="py-2 px-3 text-left font-semibold text-gray-700">
+                      <th className="py-2 px-3 text-left font-semibold text-foreground">
                         Total
                       </th>
-                      <th className="py-2 px-3 text-left font-semibold text-gray-700"></th>
+                      <th className="py-2 px-3 text-left font-semibold text-foreground"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -278,7 +275,7 @@ const CustomerProfile = () => {
                       orders.map((order) => (
                         <tr
                           key={order._id}
-                          className="border-b hover:bg-gray-50"
+                          className="border-b hover:bg-muted/50"
                         >
                           <td className="py-3 px-3">{order.orderId}</td>
                           <td className="py-3 px-3">
@@ -307,7 +304,7 @@ const CustomerProfile = () => {
                       <tr>
                         <td
                           colSpan={5}
-                          className="py-4 px-3 text-center text-gray-500"
+                          className="py-4 px-3 text-center text-muted-foreground"
                         >
                           No hay pedidos registrados para este cliente.
                         </td>

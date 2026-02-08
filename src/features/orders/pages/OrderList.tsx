@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import OrderTable from "@/features/orders/components/OrderTable";
-import axios from "axios";
-import { getAuthHeaders } from "@/lib/api";
+import api from "@/lib/api";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import DatePicker from "react-datepicker";
@@ -16,8 +15,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
-const API = import.meta.env.VITE_API_URL;
+import { getPageRange } from "@/lib/utils";
+import { useDebounce } from "@/features/customers/hooks/useDebounce";
 
 registerLocale("es", es);
 
@@ -26,44 +25,53 @@ const Orders = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-  // --- Estados de paginación ---
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchOrders = async (page = 1) => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API}/api/orders`, {
-        ...getAuthHeaders(),
-        params: {
-          page,
-          limit: 20,
-          status: statusFilter === "Todos" ? undefined : statusFilter,
-          search: searchTerm || undefined,
-          startDate: startDate?.toISOString(),
-          endDate: endDate?.toISOString(),
-        },
-      });
+  const LIMIT = 20;
 
-      
-      setOrders(res.data.docs || []);
-      setTotalPages(res.data.totalPages || 1);
-      setCurrentPage(res.data.page || 1);
-      setTotalOrders(res.data.totalDocs || 0);
-    } catch (err) {
-      console.error("❌ Error al traer las ordenes:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchOrders = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/api/orders", {
+          params: {
+            page,
+            limit: LIMIT,
+            status: statusFilter === "Todos" ? undefined : statusFilter,
+            search: debouncedSearch || undefined,
+            startDate: startDate?.toISOString(),
+            endDate: endDate?.toISOString(),
+          },
+        });
+        setOrders(res.data.docs || []);
+        setTotalPages(res.data.totalPages || 1);
+        setCurrentPage(res.data.page || 1);
+        setTotalOrders(res.data.totalDocs || 0);
+      } catch (err) {
+        console.error("❌ Error al traer las ordenes:", err);
+        setError("No se pudieron cargar las órdenes. Revisá la conexión e intentá de nuevo.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [statusFilter, debouncedSearch, startDate, endDate]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, debouncedSearch, startDate, endDate]);
 
   useEffect(() => {
     fetchOrders(currentPage);
-  }, [currentPage, statusFilter, searchTerm, startDate, endDate]);
+  }, [currentPage, fetchOrders]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -80,29 +88,46 @@ const Orders = () => {
   };
 
 
+  if (error) {
+    return (
+      <>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold tracking-tight">Órdenes</h2>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 px-4 bg-card rounded-xl border border-border text-center">
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => fetchOrders(1)}>Reintentar</Button>
+        </div>
+      </>
+    );
+  }
+
+  const from = totalOrders === 0 ? 0 : (currentPage - 1) * LIMIT + 1;
+  const to = Math.min(currentPage * LIMIT, totalOrders);
+
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">
-          Órdenes ({totalOrders} en total)
-        </h2>
-        <Link to="/orders/nuevo">
-          <Button>+ Nueva orden</Button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="min-w-0">
+          <h2 className="text-2xl font-bold tracking-tight">Órdenes</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Tickets y control de pedidos.
+          </p>
+        </div>
+        <Link to="/orders/nuevo" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">+ Nueva orden</Button>
         </Link>
       </div>
 
-      <div className="bg-white p-4 mb-4 rounded-md shadow-sm flex flex-wrap gap-4 items-end">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="bg-card border border-border p-4 mb-4 rounded-xl shadow-sm flex flex-col sm:flex-row flex-wrap gap-4 sm:items-end">
+        <div className="w-full sm:w-auto min-w-0">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Estado
           </label>
           <select
-            className="border rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-0 cursor-pointer"
+            className="border border-input rounded-md px-3 py-1.5 text-sm bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer min-h-[2.25rem] w-full"
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1); 
-            }}
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="Todos">Todos</option>
             <option value="Recibido">Recibido</option>
@@ -112,65 +137,56 @@ const Orders = () => {
           </select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="w-full sm:w-auto min-w-0 flex-1 sm:flex-initial sm:min-w-[180px]">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Cliente
           </label>
           <input
             type="text"
-            className="border rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-0"
+            className="border border-input rounded-md px-3 py-1.5 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring min-h-[2.25rem] w-full"
             placeholder="Buscar cliente"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Desde
-            </label>
+        <div className="w-full sm:w-auto min-w-0">
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Desde
+          </label>
             <DatePicker
               selected={startDate}
-              onChange={(date) => {
-                setStartDate(date);
-                setCurrentPage(1);
-              }}
-              className="border rounded px-2 py-1 text-sm w-full bg-white focus:outline-none focus:ring-0"
+              onChange={(date) => setStartDate(date)}
+              className="border border-input rounded-md px-3 py-1.5 text-sm w-full bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring min-h-[2.25rem]"
               placeholderText="Elegí una fecha"
               dateFormat="dd/MM/yyyy"
               locale="es"
             />
-          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="w-full sm:w-auto min-w-0">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Hasta
           </label>
           <DatePicker
             selected={endDate}
-            onChange={(date) => {
-              setEndDate(date);
-              setCurrentPage(1);
-            }}
-            className="border rounded px-2 py-1 text-sm w-full bg-white focus:outline-none focus:ring-0"
+            onChange={(date) => setEndDate(date)}
+            className="border border-input rounded-md px-3 py-1.5 text-sm w-full bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring min-h-[2.25rem]"
             placeholderText="Elegí una fecha"
             dateFormat="dd/MM/yyyy"
             locale="es"
           />
         </div>
 
-        <div>
-          <button
+        <div className="w-full sm:w-auto">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={clearFilters}
-            className="text-sm text-gray-600 bg-white border border-gray-200 rounded px-3 py-1 hover:bg-gray-50 focus:outline-none focus:ring-0"
           >
             Limpiar
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -180,8 +196,11 @@ const Orders = () => {
         refreshOrders={() => fetchOrders(currentPage)}
       />
 
-      {/* --- Componente de Paginación --- */}
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p className="text-sm text-muted-foreground order-2 sm:order-1">
+          Mostrando {from}–{to} de {totalOrders} orden{totalOrders !== 1 ? "es" : ""}
+        </p>
+        <div className="order-1 sm:order-2">
         <Pagination>
           <PaginationContent>
             <PaginationItem>
@@ -197,21 +216,26 @@ const Orders = () => {
               />
             </PaginationItem>
 
-            {/* Números de página */}
-            {[...Array(totalPages).keys()].map((page) => (
-              <PaginationItem key={page + 1}>
-                <PaginationLink
-                  href="#"
-                  isActive={currentPage === page + 1}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(page + 1);
-                  }}
-                >
-                  {page + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
+            {getPageRange(currentPage, totalPages).map((page, idx) =>
+              page === "ellipsis" ? (
+                <PaginationItem key={`ellipsis-${idx}`}>
+                  <span className="px-2 text-muted-foreground">…</span>
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === page}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(page);
+                    }}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
 
             <PaginationItem>
               <PaginationNext
@@ -229,6 +253,7 @@ const Orders = () => {
             </PaginationItem>
           </PaginationContent>
         </Pagination>
+        </div>
       </div>
     </>
   );
