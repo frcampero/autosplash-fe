@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
-import CustomerTable from "@/features/customers/components/CustomerTable";
+import CustomerTable from "@/features/customers/components/customerTable";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
