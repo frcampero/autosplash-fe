@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
-import CustomerTable from "../components/CustomerTable";
+import CustomerTable from "@/features/customers/components/CustomerTable";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -12,7 +12,7 @@ import {
   PaginationLink,
 } from "@/components/ui/pagination";
 import { getPageRange } from "@/lib/utils";
-import { useDebounce } from "../hooks/useDebounce";
+import { useDebounce } from "@/features/customers/hooks/useDebounce";
 import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { Customer } from "@/types/customer";
